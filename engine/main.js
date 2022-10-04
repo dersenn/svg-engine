@@ -32,6 +32,22 @@ class ngn {
   }
 }
 
+///////// SVG STUFF
+  // We'll need this.
+
+  // path.
+    // find a way to implement the different commands, curves, etc.
+    // and write it to the "d".
+    // https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/d
+
+  // group (?)
+
+  // shapes.
+    // primitive shapes that are readily available in svg. circle, rect, ellipse, etc.
+
+
+  // viewbox (?).
+
 
 
 ///////// FUNCTIONS.
