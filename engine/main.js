@@ -1,5 +1,5 @@
 /*
-An Attempt to create my own SVG Engine for Animation Purposes.
+An Attempt to create my own SVG Engine for Animation (and vector export) Purposes.
 Adapting from Chrigi Etters Input in CAS Coding for the Arts.
 And looking into other frameworks (p5.js) how they work.
 
