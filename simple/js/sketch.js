@@ -20,9 +20,10 @@ for (let x = 0; x < nRows; x++) {
     let r = Math.min(w, h) / 2
     let c = new Pt(r + x * w, r + y *h)
     let a = new Pt(c.x + w, c.y + h)
+    svg.makeEllipse(c, w/2, h/2, '#fff')
     svg.makeCircle(c, r, 'rgb(0,0,100)')
+    svg.makeEllipse(c, '3%', h/4, '#0f0')
     svg.makeLine(c, a, '#f00', 10)
-    svg.makeEllipse(c, '3%', h/4, '#0ff')
   }
 }
 
