@@ -2,10 +2,10 @@
 
 class SVG {
   //by default appends to body.
-  constructor(parent = document.body) {
+  constructor(setup) {
     this.ns = 'http://www.w3.org/2000/svg'
     this.xl = 'http://www.w3.org/1999/xlink'
-    this.parent = parent
+    this.parent = setup.parent
     this.w = this.parent.clientWidth
     this.h = this.parent.clientHeight
     this.els = []
@@ -17,7 +17,7 @@ class SVG {
       this.stage.setAttribute('viewBox', `0 0 ${this.w} ${this.h}`)
       this.stage.setAttribute('xmlns', this.ns)
       this.stage.setAttribute('xmlns:xlink', this.xl)
-      // this.stage.setAttribute('preserveAspectRatio', 'none')
+      this.stage.setAttribute('preserveAspectRatio', setup.presAspect)
       this.parent.append(this.stage)
     }
 
@@ -77,7 +77,6 @@ class SVG {
   }
 }
 
-
 class Path {
   constructor(ia = []) {
     this.pts = ia
@@ -112,30 +111,30 @@ class Vector {
   }
 
   normalize() {
-    let xn = this.x / this.m
-    let yn = this.y / this.m
-    let zn = this.z / this.m
+    let xn = this.x / this.m,
+        yn = this.y / this.m,
+        zn = this.z / this.m
     return new Vector(xn, yn, zn)
   }
 
   add(ov) {
-    let xn = this.x + ov.x
-    let yn = this.y + ov.y
-    let zn = this.z + ov.z
+    let xn = this.x + ov.x,
+        yn = this.y + ov.y,
+        zn = this.z + ov.z
     return new Vector(xn, yn, zn)
   }
 
   sub(ov) {
-    let xn = this.x - ov.x
-    let yn = this.y - ov.y
-    let zn = this.z - ov.z
+    let xn = this.x - ov.x, 
+        yn = this.y - ov.y,
+        zn = this.z - ov.z
     return new Vector(xn, yn, zn)
   }
 
   cross(ov) {
-    let xn = this.y * ov.z - this.z * ov.y
-    let yn = this.z * ov.x - this.x * ov.z
-    let zn = this.x * ov.y - this.y * ov.x
+    let xn = this.y * ov.z - this.z * ov.y,
+        yn = this.z * ov.x - this.x * ov.z,
+        zn = this.x * ov.y - this.y * ov.x
     return new Vector(xn, yn, zn)
   }
 
