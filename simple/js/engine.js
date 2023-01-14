@@ -75,24 +75,38 @@ class SVG {
     rect.setAttribute('stroke-width', strokeW)
     this.els.push(rect)
   }
-}
 
-class Path {
-  constructor(ia = []) {
-    this.pts = ia
-    this.d = ''
-  }
-
-  makePath() {
+  makePath(d, fill = 'transparent', stroke = 'transparent', strokeW = 0) {
     let path = document.createElementNS(this.ns, 'path')
-    path.setAttribute('d', this.d)
-    // this.els.push(path)
+    path.setAttribute('d', d)
+    path.setAttribute('fill', fill)
+    path.setAttribute('stroke', stroke)
+    path.setAttribute('stroke-width', strokeW)
+    this.els.push(path)
   }
+
+  // To Do:
+  // makeGroup() {}
+  // save() {}
+
 }
 
-let p = new Path()
+// Also: Make classes for the different shapes. Collect them as objects.
+// And only on draw() push them to svg... probably useful for animation etc.
 
-console.log(p)
+// class Path {
+//   constructor(ia = []) {
+//     this.pts = ia
+//     this.d = ''
+//   }
+
+//   makePath() {
+//     let path = document.createElementNS(this.ns, 'path')
+//     path.setAttribute('d', this.d)
+//     // this.els.push(path)
+//   }
+// }
+
 
 class Pt {
   constructor(x, y, z = 0) {
@@ -100,6 +114,35 @@ class Pt {
     this.y = y
     this.z = z
   }
+
+  add(op) {
+    let xn = this.x + op.x,
+        yn = this.y + op.y,
+        zn = this.z + op.z
+    return new Pt(xn, yn, zn)
+  }
+
+  sub(op) {
+    let xn = this.x - op.x, 
+        yn = this.y - op.y,
+        zn = this.z - op.z
+    return new Pt(xn, yn, zn)
+  }
+
+  mid(op) {
+    let xn = (this.x + op.x) / 2,
+        yn = (this.y + op.y) / 2,
+        zn = (this.z + op.z) / 2
+    return new Pt(xn, yn, zn)
+  }
+
+  lerp(op, t) {
+    let xn = (1 - t) * this.x + op.x * t,
+        yn = (1 - t) * this.y + op.y * t,
+        zn = (1 - t) * this.z + op.z * t
+    return new Pt(xn, yn, zn)
+  }
+
 }
 
 class Vector {
@@ -110,7 +153,7 @@ class Vector {
     this.m = Math.sqrt(this.x**2 + this.y**2 + this.z**2) // Magnitude
   }
 
-  normalize() {
+  norm() {
     let xn = this.x / this.m,
         yn = this.y / this.m,
         zn = this.z / this.m
@@ -148,14 +191,20 @@ class Vector {
 
 /////// HELPER FUNCTIONS.
 
+// shorten to rand(), randInt() etc.
+
 function random() {
   return Math.random()
 }
 
+// Add random w/ seed.
+
 function randomInt(min, max) {
-  min = Math.ceil(min)
-  max = Math.floor(max)
-  return Math.floor(Math.random() * (max - min) + min)
+  if (min = max) {
+    return min
+  } else {
+    return Math.floor(Math.random() * (max - min + 1)) + min
+  }
 }
 
 function coinToss(chance) {
@@ -170,10 +219,10 @@ function map(val, minIn, maxIn, minOut, maxOut) {
 }
 
 function dist(a, b) {
-  let xx = a.x - b.x
-  let yy = a.y - b.y
-  return Math.sqrt(xx**2 + yy**2)
-  // return Math.round(Math.sqrt(aa * aa + bb * bb) * 100) / 100 // Why is it rounded???
+  let xx = a.x - b.x,
+      yy = a.y - b.y,
+      zz = a.z - b.z
+  return Math.sqrt(xx**2 + yy**2 + zz**2)
 }
 
 function rad(deg) {
@@ -184,6 +233,9 @@ function deg(rad) {
   return rad / (Math.PI / 180)
 }
 
-
+// make this universal (with Pts as input). As in Pt class.
+function lerp(a, b, t) {
+  return (1 - t) * a + b * t
+}
 
 // My Only Friend, The End.
