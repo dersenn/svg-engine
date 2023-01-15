@@ -36,63 +36,57 @@ let nCols = 2
 let cellW = svg.w / nCols
 let cellH = svg.h / nRows
 
+let xOff,
+    yOff
 
-for (let x = 0; x < nRows; x++) {
-  for (let y = 0; y < nCols; y++) {
-    let xOff = x * cellW,
-        yOff = y * cellH,
-        c = new Pt(x * cellW + cellW / 2, y * cellH + cellH / 2),
-        pts = []
+for (let x = 0; x < nCols; x++) {
+  xOff = x * cellW
+  for (let y = 0; y < nRows; y++) {
+    yOff = y * cellH
+    let pts = []
 
-    svg.makeCircle(c, 2, 'rgb(0,0,255')
+    let tl = new Pt(xOff, yOff),
+        br = new Pt(xOff + cellW, yOff + cellH)
 
-    let yPos = yOff + random() * cellH
-    for (let p = 0; p < randomInt(1, 3); p++) {
-      pts.push(new Pt(xOff, yPos))
-      yPos = yPos + random() * (cellH - yPos)
-    }
+    let tile = new Tile(tl, br)
 
-    let xPos = xOff + random() * cellW
-    for (let p = 0; p < randomInt(1, 3); p++) {
-      pts.push(new Pt(xPos, yOff + cellH))
-      xPos = xPos + random() * (cellW - xPos)
-    }
+    // svg.makeCircle(tile.tl, 5, 'rgb(0,255,0')
+    // svg.makeCircle(tile.bl, 5, 'rgb(0,255,0')
+    // svg.makeCircle(tile.br, 5, 'rgb(0,255,0')
+    // svg.makeCircle(tile.tr, 5, 'rgb(0,255,0')
 
-    yPos = yOff + cellH - random() * cellH
-    for (let p = 0; p < randomInt(1, 3); p++) {
-      pts.push(new Pt(xOff + cellW, yPos))
-      yPos = yPos - random() * (cellH - yPos)
-    }
+    // svg.makeCircle(tile.c, 5, 'rgb(0,0,255')
 
-    xPos = xOff + cellW - random() * cellW
-    for (let p = 0; p < randomInt(1, 3); p++) {
-      pts.push(new Pt(xPos, yOff))
-      xPos = xPos - random() * (cellW - xPos)
-    }
 
-    let nPts = pts.concat(pts[0])
-    let nnPts = nPts.slice(1)
+
+    pts = pts.concat(divLength(tile.tl, tile.bl, randomInt(2,4), 'RAND'))
+    pts = pts.concat(divLength(tile.bl, tile.br, randomInt(2,4), 'RAND'))
+    pts = pts.concat(divLength(tile.br, tile.tr, randomInt(2,4), 'RAND'))
+    pts = pts.concat(divLength(tile.tr, tile.tl, randomInt(2,4), 'RAND'))
+
+
+    // hmm, this????
+    pts = pts.concat(pts[0])
 
     let d = ''
     for (let j = 0; j < pts.length; j++) {
+      console.log(j, pts.length)
 
       if (j == 0) {
         d += `M ${pts[j].x} ${pts[j].y} `
 
-      } else if (j != pts.length -1) {
+      } else if (j != pts.length) {
         let m = pts[j].mid(pts[j-1])
-        let cp = m.lerp(c, .5)
+        let cp = m.lerp(tile.c, .5)
         d += `Q ${cp.x} ${cp.y} ${pts[j].x} ${pts[j].y} `
-
-      } else {
-        let m = pts[j].mid(pts[0])
-        let cp = m.lerp(c, .5)
-        d += `Q ${cp.x} ${cp.y} ${pts[0].x} ${pts[0].y}`
       }
+
+
+
     }
 
     // console.log(d)
-    // svg.makePath(d, '#0f0')
+    svg.makePath(d, '#0f0', 'transparent', 1)
 
     // for (let i = 0; i < pts.length; i++) {
     //   let p = nPts[i].mid(nPts[i+1])
@@ -105,28 +99,20 @@ for (let x = 0; x < nRows; x++) {
 
 // TESTS AND MATH
 
-let p1 = new Pt(0, svg.h/2)
-let p2 = new Pt(svg.w, svg.h/2)
+// let p1 = new Pt(0, svg.h/2)
+// let p2 = new Pt(svg.w, svg.h/2)
 
-svg.makeLine(p1, p2, '#f00')
+// svg.makeLine(p1, p2, '#f00')
 
-let lrPts = []
+// let lrPts = divLength(p1, p2, 4, 'RAND')
 
-function divLength(a, b, nSeg, t = 1/nSeg) {
-  let pStart = a
-  for (let i = 0; i < nSeg-1; i++) {
-    pStart = pStart.lerp(b, t)
-    lrPts.push(pStart)
-  }
-}
 
-divLength(p1, p2, 4)
+// for (let i = 0; i < lrPts.length; i++) {
+//   svg.makeCircle(lrPts[i], 5, `rgb(${255/(i+1)}, 0, 0)`)
+// }
 
-for (let i = 0; i < lrPts.length; i++) {
-  svg.makeCircle(lrPts[i], 5, `rgb(${255/(i+1)}, 0, 0)`)
-}
+// console.log(lrPts)
 
-console.log(lrPts)
 
 
 ///////////////////////////////////////////

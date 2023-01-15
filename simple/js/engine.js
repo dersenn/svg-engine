@@ -107,6 +107,21 @@ class SVG {
 //   }
 // }
 
+// Probably should only have one class, either Pt{} or Vector{}.
+// They are mostly identical...
+
+// The bones of a grid thing. TopLeft and BottomRight as defining Pts.
+class Tile {
+  constructor(tl, br) {
+    this.tl = tl
+    this.bl = new Pt(tl.x, br.y)
+    this.br = br
+    this.tr = new Pt(br.x, tl.y)
+    this.c = tl.mid(br)
+
+    // What else? corners array?
+  }
+}
 
 class Pt {
   constructor(x, y, z = 0) {
@@ -115,6 +130,7 @@ class Pt {
     this.z = z
   }
 
+  // op = other Point
   add(op) {
     let xn = this.x + op.x,
         yn = this.y + op.y,
@@ -160,6 +176,7 @@ class Vector {
     return new Vector(xn, yn, zn)
   }
 
+  // ov = other Vector
   add(ov) {
     let xn = this.x + ov.x,
         yn = this.y + ov.y,
@@ -191,20 +208,16 @@ class Vector {
 
 /////// HELPER FUNCTIONS.
 
+// Make those shorter. Arrow functions?!
 // shorten to rand(), randInt() etc.
 
+// Add random w/ seed.
 function random() {
   return Math.random()
 }
 
-// Add random w/ seed.
-
 function randomInt(min, max) {
-  if (min = max) {
-    return min
-  } else {
     return Math.floor(Math.random() * (max - min + 1)) + min
-  }
 }
 
 function coinToss(chance) {
@@ -233,9 +246,28 @@ function deg(rad) {
   return rad / (Math.PI / 180)
 }
 
-// make this universal (with Pts as input). As in Pt class.
+// make this universal (with Pts{} as input). As in Pt class.
 function lerp(a, b, t) {
   return (1 - t) * a + b * t
 }
+
+// Divide length between to points. Returns intermediary Points. Not so sure.
+// Looks very end-heavy to me. not really random.
+// Maybe add a minimum Distance.
+function divLength(a, b, nSeg, t = 1/nSeg, outA = []) {
+  if (t == 'RAND') {
+    for (let i = 0; i < nSeg-1; i++) {
+      t = random()
+      a = a.lerp(b, t)
+      outA.push(a)
+    }
+  } else {
+    for (let i = 0; i < nSeg-1; i++) {
+      outA.push(a.lerp(b, (i+1)*t))
+    }
+  }
+  return outA
+}
+
 
 // My Only Friend, The End.
