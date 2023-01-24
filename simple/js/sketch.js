@@ -8,29 +8,6 @@ const setup = {
 
 let svg = new SVG(setup)
 
-// for (let x = 0; x < nRows; x++) {
-//   for (let y = 0; y < nCols; y++) {
-//     let w = svg.w / nCols
-//     let h = svg.h / nRows
-//     let r = Math.min(w, h) / 2
-//     let c = new Pt(r + x * w, r + y *h)
-//     let a = new Pt(c.x + w, c.y + h)
-//     svg.makeEllipse(c, w/2, h/2, '#fff')
-//     svg.makeCircle(c, r, 'rgb(0,0,100)')
-//     svg.makeEllipse(c, '3%', h/4, '#0f0')
-//     svg.makeLine(c, a, '#f00', 10)
-//   }
-// }
-
-// for (let i = 0; i < 10; i++) {
-//   let c = {
-//     x: Math.random() * svg.w,
-//     y: Math.random() * svg.h
-//   }
-//   // svg.makeCircle(c, Math.random() * 50, '#ffffff')
-// }
-
-
 let nRows = 2
 let nCols = 2
 let cellW = svg.w / nCols
@@ -57,12 +34,12 @@ for (let x = 0; x < nCols; x++) {
 
     // svg.makeCircle(tile.c, 5, 'rgb(0,0,255')
 
-
-
-    pts = pts.concat(divLength(tile.tl, tile.bl, randomInt(2,4), 'RAND'))
-    pts = pts.concat(divLength(tile.bl, tile.br, randomInt(2,4), 'RAND'))
-    pts = pts.concat(divLength(tile.br, tile.tr, randomInt(2,4), 'RAND'))
-    pts = pts.concat(divLength(tile.tr, tile.tl, randomInt(2,4), 'RAND'))
+    pts = pts.concat(
+          divLength(tile.tl, tile.bl, randomInt(2,4), 'RAND'),
+          divLength(tile.bl, tile.br, randomInt(2,4), 'RAND'),
+          divLength(tile.br, tile.tr, randomInt(2,4), 'RAND'),
+          divLength(tile.tr, tile.tl, randomInt(2,4), 'RAND')
+    )
 
 
     // hmm, this????
@@ -70,18 +47,26 @@ for (let x = 0; x < nCols; x++) {
 
     let d = ''
     for (let j = 0; j < pts.length; j++) {
-      console.log(j, pts.length)
+      // console.log(j, pts.length)
 
-      if (j == 0) {
-        d += `M ${pts[j].x} ${pts[j].y} `
-
-      } else if (j != pts.length) {
-        let m = pts[j].mid(pts[j-1])
-        let cp = m.lerp(tile.c, .5)
-        d += `Q ${cp.x} ${cp.y} ${pts[j].x} ${pts[j].y} `
+      switch (j) {
+        case 0:
+          d += `M ${pts[j].x} ${pts[j].y} `
+          break
+        // case pts.length-1: {
+        //   let m = pts[0].mid(pts[j])
+        //   let cp = m.lerp(tile.c, .5)
+        //   d += `Q ${cp.x} ${cp.y} ${pts[j].x} ${pts[j].y} `
+        //   break
+        // }
+        default: {
+          let m = pts[j].mid(pts[j-1])
+          let cp = m.lerp(tile.c, .5)
+          d += `Q ${cp.x} ${cp.y} ${pts[j].x} ${pts[j].y} `
+          break
+        }
       }
-
-
+      // console.log(pts.length, pts[-1])
 
     }
 
@@ -151,6 +136,15 @@ svg.draw()
 
 
 
+// Save
+
+const keyHandlerSave = (event) => {
+  if (event.key === "s") {
+    svg.save()
+  }
+};
+
+document.addEventListener("keypress", keyHandlerSave);
 
 
 
