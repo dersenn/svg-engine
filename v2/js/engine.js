@@ -4,7 +4,6 @@
 // the main class
 
 class SVG {
-  //by default appends to body.
   constructor(setup) {
     this.ns = 'http://www.w3.org/2000/svg'
     this.xl = 'http://www.w3.org/1999/xlink'
@@ -15,6 +14,8 @@ class SVG {
     this.h = this.parent.clientHeight
     this.els = []
 
+    this.bg = '#ff0'
+
     // initialize and push to dom on creation.
     this.init()
   }
@@ -23,17 +24,11 @@ class SVG {
     this.stage = document.createElementNS(this.ns, 'svg')
     this.stage.setAttribute('xmlns', this.ns)
     this.stage.setAttribute('xmlns:xlink', this.xl)
-    this.stage.setAttributeNS(null, 'width', this.w)
-    this.stage.setAttributeNS(null, 'height', this.h)
-    this.stage.setAttributeNS(null, 'viewBox', `0 0 ${this.w} ${this.h}`)
-    this.stage.setAttributeNS(null, 'preserveAspectRatio', setup.presAspect)
+    this.stage.setAttribute('width', this.w)
+    this.stage.setAttribute('height', this.h)
+    this.stage.setAttribute('viewBox', `0 0 ${this.w} ${this.h}`)
+    this.stage.setAttribute('preserveAspectRatio', setup.presAspect)
     this.parent.append(this.stage)
-  }
-
-  draw() {
-    for (let e = 0; e < this.els.length; e++) {
-      this.stage.append(this.els[e])
-    }
   }
 
   save() {
@@ -48,6 +43,11 @@ class SVG {
     URL.revokeObjectURL(link.href);  
   }
 
+  draw() {
+    for (let e = 0; e < this.els.length; e++) {
+      this.stage.append(this.els[e])
+    }
+  }
 
 
 
@@ -108,34 +108,18 @@ class SVG {
 
   // To Do:
   // makeGroup() {}
-  // save() {}
 
 }
 
-// Also: Make classes for the different shapes. Collect them as objects.
-// And only on draw() push them to svg... probably useful for animation etc.
-
-// class Path {
-//   constructor(ia = []) {
-//     this.pts = ia
-//     this.d = ''
-//   }
-
-//   makePath() {
-//     let path = document.createElementNS(this.ns, 'path')
-//     path.setAttribute('d', this.d)
-//     // this.els.push(path)
-//   }
-// }
 
 
 // The bones of a grid thing. TopLeft and BottomRight as defining Pts.
 class Tile {
   constructor(tl, br) {
     this.tl = tl
-    this.bl = new Pt(tl.x, br.y)
+    this.bl = new Vec(tl.x, br.y)
     this.br = br
-    this.tr = new Pt(br.x, tl.y)
+    this.tr = new Vec(br.x, tl.y)
     this.c = tl.mid(br)
 
     // What else? corners array?
@@ -143,7 +127,7 @@ class Tile {
 }
 
 
-// Probably should only have one class, either Pt{} or Vector{}.
+// Probably should only have one class, either Pt{} or Vec{}.
 // They are mostly identical...
 
 
@@ -168,24 +152,9 @@ class Pt {
         zn = this.z - op.z
     return new Pt(xn, yn, zn)
   }
-
-  mid(op) {
-    let xn = (this.x + op.x) / 2,
-        yn = (this.y + op.y) / 2,
-        zn = (this.z + op.z) / 2
-    return new Pt(xn, yn, zn)
-  }
-
-  lerp(op, t) {
-    let xn = (1 - t) * this.x + op.x * t,
-        yn = (1 - t) * this.y + op.y * t,
-        zn = (1 - t) * this.z + op.z * t
-    return new Pt(xn, yn, zn)
-  }
-
 }
 
-class Vector {
+class Vec {
   constructor(x, y, z = 0) {
     this.x = x
     this.y = y
@@ -197,34 +166,49 @@ class Vector {
     let xn = this.x / this.m,
         yn = this.y / this.m,
         zn = this.z / this.m
-    return new Vector(xn, yn, zn)
+    return new Vec(xn, yn, zn)
   }
 
-  // ov = other Vector
+  // ov = other Vec
   add(ov) {
     let xn = this.x + ov.x,
         yn = this.y + ov.y,
         zn = this.z + ov.z
-    return new Vector(xn, yn, zn)
+    return new Vec(xn, yn, zn)
   }
 
   sub(ov) {
     let xn = this.x - ov.x, 
         yn = this.y - ov.y,
         zn = this.z - ov.z
-    return new Vector(xn, yn, zn)
+    return new Vec(xn, yn, zn)
   }
 
   cross(ov) {
     let xn = this.y * ov.z - this.z * ov.y,
         yn = this.z * ov.x - this.x * ov.z,
         zn = this.x * ov.y - this.y * ov.x
-    return new Vector(xn, yn, zn)
+    return new Vec(xn, yn, zn)
   }
 
   dot(ov) {
     return this.x * ov.x + this.y * ov.y + this.z * ov.z
   }
+
+  lerp(ov, t) {
+    let xn = (1 - t) * this.x + ov.x * t,
+        yn = (1 - t) * this.y + ov.y * t,
+        zn = (1 - t) * this.z + ov.z * t
+    return new Vec(xn, yn, zn)
+  }
+
+  mid(ov) {
+    let xn = (this.x + ov.x) / 2,
+        yn = (this.y + ov.y) / 2,
+        zn = (this.z + ov.z) / 2
+    return new Vec(xn, yn, zn)
+  }
+
 }
 
 
@@ -262,6 +246,13 @@ function dist(a, b) {
   return Math.sqrt(xx**2 + yy**2 + zz**2)
 }
 
+function lerp(a, b, t) {
+  let xn = (1 - t) * a.x + b.x * t,
+      yn = (1 - t) * a.y + b.y * t,
+      zn = (1 - t) * a.z + b.z * t
+  return new Vec(xn, yn, zn)
+}
+
 function rad(deg) {
   return deg * (Math.PI / 180)
 }
@@ -270,10 +261,8 @@ function deg(rad) {
   return rad / (Math.PI / 180)
 }
 
-// make this universal (with Pts{} as input). As in Pt class.
-function lerp(a, b, t) {
-  return (1 - t) * a + b * t
-}
+
+
 
 // Divide length between to points. Returns intermediary Points. Not so sure.
 // Looks very end-heavy to me. not really random.

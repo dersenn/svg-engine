@@ -3,7 +3,6 @@ const setup = {
       id: '1',
       parent: document.body,
       presAspect: 'none', // needs more work
-      border: 10 // will use later
 }
 
 let svg = new SVG(setup)
@@ -22,8 +21,8 @@ for (let x = 0; x < nCols; x++) {
     yOff = y * cellH
     let pts = []
 
-    let tl = new Pt(xOff, yOff),
-        br = new Pt(xOff + cellW, yOff + cellH)
+    let tl = new Vec(xOff, yOff),
+        br = new Vec(xOff + cellW, yOff + cellH)
 
     let tile = new Tile(tl, br)
 
@@ -84,8 +83,8 @@ for (let x = 0; x < nCols; x++) {
 
 // TESTS AND MATH
 
-// let p1 = new Pt(0, svg.h/2)
-// let p2 = new Pt(svg.w, svg.h/2)
+// let p1 = new Vec(0, svg.h/2)
+// let p2 = new Vec(svg.w, svg.h/2)
 
 // svg.makeLine(p1, p2, '#f00')
 
@@ -102,9 +101,9 @@ for (let x = 0; x < nCols; x++) {
 
 ///////////////////////////////////////////
 
-// let p1 = new Pt(0, 200)
-// let p2 = new Pt(100, 500)
-// let p3 = new Pt(400, 200)
+// let p1 = new Vec(0, 200)
+// let p2 = new Vec(100, 500)
+// let p3 = new Vec(400, 200)
 
 // let p12 = p1.mid(p2)
 // let p23 = p2.mid(p3)
@@ -124,7 +123,7 @@ for (let x = 0; x < nCols; x++) {
 // let r = random()
 // let px = (1 - r) * p12.x + p3.x * r
 // let py = (1 - r) * p12.y + p3.y * r
-// let p = new Pt(px, py)
+// let p = new Vec(px, py)
 // let pl = p12.lerp(p3, r)
 
 // svg.makeCircle(p, 5, '#f00')
