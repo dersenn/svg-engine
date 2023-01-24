@@ -5,23 +5,26 @@ class SVG {
   constructor(setup) {
     this.ns = 'http://www.w3.org/2000/svg'
     this.xl = 'http://www.w3.org/1999/xlink'
+    this.mime = { type: "image/svg+xml" }
     this.parent = setup.parent
+    this.id = setup.id
     this.w = this.parent.clientWidth
     this.h = this.parent.clientHeight
     this.els = []
 
-    this.init = function() {
-      this.stage = document.createElementNS(this.ns, 'svg')
-      this.stage.setAttribute('width', this.w)
-      this.stage.setAttribute('height', this.h)
-      this.stage.setAttribute('viewBox', `0 0 ${this.w} ${this.h}`)
-      this.stage.setAttribute('xmlns', this.ns)
-      this.stage.setAttribute('xmlns:xlink', this.xl)
-      this.stage.setAttribute('preserveAspectRatio', setup.presAspect)
-      this.parent.append(this.stage)
-    }
-
+    // initialize and push to dom on creation.
     this.init()
+  }
+
+  init() {
+    this.stage = document.createElementNS(this.ns, 'svg')
+    this.stage.setAttribute('width', this.w)
+    this.stage.setAttribute('height', this.h)
+    this.stage.setAttribute('viewBox', `0 0 ${this.w} ${this.h}`)
+    this.stage.setAttribute('xmlns', this.ns)
+    this.stage.setAttribute('xmlns:xlink', this.xl)
+    this.stage.setAttribute('preserveAspectRatio', setup.presAspect)
+    this.parent.append(this.stage)
   }
 
   draw() {
@@ -29,6 +32,21 @@ class SVG {
       this.stage.append(this.els[e])
     }
   }
+
+  save() {
+    const str = new XMLSerializer().serializeToString(this.stage);
+    const blob = new Blob([str], this.mime);
+
+    const link = document.createElement("a"),
+          time = Math.round(new Date().getTime() / 1000);
+    link.download = `${document.title}-${time}.svg`;
+    link.href = URL.createObjectURL(blob);
+    link.click();
+    URL.revokeObjectURL(link.href);  
+  }
+
+
+
 
   makeLine(a, b, stroke = 'transparent', strokeW = 1) {
     let line = document.createElementNS(this.ns, 'line')
@@ -107,8 +125,6 @@ class SVG {
 //   }
 // }
 
-// Probably should only have one class, either Pt{} or Vector{}.
-// They are mostly identical...
 
 // The bones of a grid thing. TopLeft and BottomRight as defining Pts.
 class Tile {
@@ -122,6 +138,11 @@ class Tile {
     // What else? corners array?
   }
 }
+
+
+// Probably should only have one class, either Pt{} or Vector{}.
+// They are mostly identical...
+
 
 class Pt {
   constructor(x, y, z = 0) {
@@ -268,6 +289,14 @@ function divLength(a, b, nSeg, t = 1/nSeg, outA = []) {
   }
   return outA
 }
+
+
+
+
+
+
+
+
 
 
 // My Only Friend, The End.
