@@ -19,7 +19,7 @@ class SVG {
     this.init()
   }
 
-  defaults(fill = '#000', stroke = '#000', strokeW = 1) {
+  defaults(fill = '#000', stroke = '#000', strokeW = 0) {
     this.def = {
       fill: fill,
       stroke: stroke,
@@ -128,17 +128,41 @@ class SVG {
 }
 
 class Path {
-  constructor() {
+  constructor(pts = [new Vec(0,0)], close = true) {
+    this.pts = pts
+    this.close = close
+    this.d = 'M '
 
+    this.build()
+  }
+  
+  build() {
+    for (let i = 0; i < this.pts.length; i++) {
+      let pt = this.pts[i]
+      switch(i) {
+        case(0):
+          this.d += `${pt.x} ${pt.y}`
+          break
+        default:
+          this.d += ` L ${pt.x} ${pt.y}`
+      }
+    }
+    if (this.close) {this.d += ' Z'}
+
+  }
+
+  addLine(pt) {
+    let line = {
+      type: 'L',
+      xEnd: pt.x,
+      yEnd: pt.y
+    }
   }
 
   addPtCub() {
 
   }
-  
-  toStr() {
 
-  }
 }
 
 
@@ -211,7 +235,7 @@ class Vec {
 }
 
 
-/////// HELPER FUNCTIONS.
+/////// UTILITY FUNCTIONS.
 
 // Add random w/ seed.
 function rand() {

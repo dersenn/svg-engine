@@ -15,51 +15,24 @@ let svg = new SVG(setup, defaults)
 
 
 
+let pts = [
+  new Vec(0, 0),
+  new Vec(svg.w/3, svg.h/3),
+  new Vec(svg.w/2, svg.h * .75),
+  new Vec(rand() * svg.w, rand() * svg.h)
+]
 
-
-
-let nPts = 3
-let r = rand() * (svg.w/nPts)
-
-let a = new Vec(0, svg.h)
-let b = new Vec(svg.w, 0)
-
-let pts = divLength(a, b, 4)
-
-let crcls = []
+let p = new Path(pts)
 
 for (let i = 0; i < pts.length; i++) {
-  let crcl = svg.makeCircle(pts[i], r)
-  crcl.id = 'blah' + i
-  crcls.push(crcl)
+  const pt = svg.makeCircle(pts[i], 5, '#f00')
 }
 
+let path = svg.makePath(p.d, 'transparent', '#0f0', 1)
 
+
+console.log(path)
 console.log(svg.stage)
-console.log(svg)
-
-
-// console.log(svg.els)
-
-// svg.draw()
-
-// function animate(t) {
-//   crcls[1].setAttribute('r', randInt(5, 10))
-//   requestAnimationFrame(animate)
-// }
-
-// animate(0)
-
-// const keyHandlerSave = (event) => {
-//   if (event.key === 's') {
-      //   svg.save()
-//         crcls[1].setAttribute('r', randInt(5, 10))
-//         console.log(crcls[1])
-//   }
-// }
-    
-// document.addEventListener('keypress', keyHandlerSave);
-
 
 
 
