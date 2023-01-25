@@ -16,24 +16,24 @@ let svg = new SVG(setup, defaults)
 
 
 let pts = [
-  new Vec(0, 0),
+  new Vec(svg.w*.75, svg.h*.25),
   new Vec(svg.w/3, svg.h/3),
-  new Vec(svg.w/2, svg.h * .75),
+  new Vec(svg.w/2, svg.h*.75),
   new Vec(rand() * svg.w, rand() * svg.h)
 ]
 
-let p = new Path(pts)
-
 for (let i = 0; i < pts.length; i++) {
-  const pt = svg.makeCircle(pts[i], 5, '#f00')
+  const pt = svg.makeCircle(pts[i], 5, '#000')
 }
 
-let path = svg.makePath(p.d, 'transparent', '#0f0', 1)
+let path = new Path(pts, true)
 
+let polygon = svg.makePath(path.buildPolygon(), 'transparent', '#0f0', 1)
 
-console.log(path)
-console.log(svg.stage)
+// let quadratic = svg.makePath(path.buildQuadBez(), 'transparent', '#00f', 1)
 
+let spline = svg.makePath(path.buildSpline(), 'transparent', '#f00', 2)
+console.log(path.buildSpline())
 
 
 

@@ -128,43 +128,206 @@ class SVG {
 }
 
 class Path {
-  constructor(pts = [new Vec(0,0)], close = true) {
+  constructor(pts = [new Vec(0,0)], close = false) {
     this.pts = pts
     this.close = close
-    this.d = 'M '
 
-    this.build()
   }
   
-  build() {
+  buildPolygon() {
+    let str = 'M '
     for (let i = 0; i < this.pts.length; i++) {
       let pt = this.pts[i]
       switch(i) {
         case(0):
-          this.d += `${pt.x} ${pt.y}`
+          str += `${pt.x} ${pt.y}`
           break
         default:
-          this.d += ` L ${pt.x} ${pt.y}`
+          str += ` L ${pt.x} ${pt.y}`
+          break
       }
     }
-    if (this.close) {this.d += ' Z'}
-
+    if (this.close) {str += ' Z'}
+    return str
   }
 
-  addLine(pt) {
-    let line = {
-      type: 'L',
-      xEnd: pt.x,
-      yEnd: pt.y
+  // Quadratic
+  buildQuadBez() {
+    let str = 'M '
+    for (let i = 0; i < this.pts.length; i++) {
+      let pt = this.pts[i]
+      let cp, m, p
+      switch(i) {
+        case 0:
+          cLog('case 0')
+          str += `${pt.x} ${pt.y}`
+          break
+
+        // case 1:
+        //   cLog('case 1')
+        //   m = pt.mid(pts[i-1])
+        //   svg.makeCircle(m, 5, '#00f')
+
+        //   p = nVec(m.x + 100, m.y + 100)
+        //   svg.makeCircle(p, 5, '#0ff')
+
+        //   cp = m.lerp(p, .5)
+        //   svg.makeCircle(cp, 5, '#f00')
+
+        //   str += ` S ${cp.x} ${cp.y} ${pt.x} ${pt.y}`
+
+        //   break
+
+        case this.pts.length-1:
+          console.log('huhu', i)
+
+          m = pt.mid(pts[i-1])
+          // svg.makeCircle(m, 5, '#00f')
+
+          p = nVec(m.x + 100, m.y + 100)
+          // svg.makeCircle(p, 5, '#0ff')
+
+          cp = m.lerp(p, .5)
+          // svg.makeCircle(cp, 5, '#f00')
+
+          str += ` S ${cp.x} ${cp.y} ${pt.x} ${pt.y}`
+
+          if (this.close) {
+            m = pts[0].mid(pt)
+            // svg.makeCircle(m, 5, '#00f')
+  
+            p = nVec(m.x + 100, m.y + 100)
+            // svg.makeCircle(p, 5, '#0ff')
+  
+            cp = m.lerp(p, .5)
+            // svg.makeCircle(cp, 5, '#f00')
+  
+            str += ` S ${cp.x} ${cp.y} ${pts[0].x} ${pts[0].y}`  
+          }
+          break
+
+        default:
+          console.log('default', i)
+
+          m = pt.mid(pts[i-1])
+          // svg.makeCircle(m, 5, '#00f')
+
+          p = nVec(m.x + 100, m.y + 100)
+          // svg.makeCircle(p, 5, '#0ff')
+
+          cp = m.lerp(p, .5)
+          // svg.makeCircle(cp, 5, '#f00')
+
+          str += ` S ${cp.x} ${cp.y} ${pt.x} ${pt.y}`
+
+          break
+      }
     }
+    if (this.close) {str += ' Z'}
+    return str
   }
 
-  addPtCub() {
+  buildSpline(t = .2) {
+    let pts = this.pts
+    let str = 'M '
+    for (let i = 0; i < pts.length; i++) {
 
+      let pt = pts[i]
+      let p0, p1, p2, mid, cps
+
+      switch(i) {
+        case 0:
+          p0 = pts[pts.length-1]
+          p1 = pts[i]
+          p2 = pts[i+1]
+
+          svg.makeCircle(p1, 10, 'transparent', '#0f0', 3)
+          // console.log(p0, p1, p2)
+
+          cps = getControlPoints(p0, p1, p2, t)
+          svg.makeCircle(cps[0], 3, '#f00')
+          svg.makeCircle(cps[1], 3, '#f00')
+
+          pt.cps = cps
+
+          str += `${pt.x} ${pt.y}`
+          break
+        case pts.length-1:
+          p0 = pts[i-1]
+          p1 = pts[i]
+          p2 = pts[0]
+
+          svg.makeCircle(p1, 10, 'transparent', '#0f0', 3)
+          // console.log(p0, p1, p2)
+
+          cps = getControlPoints(p0, p1, p2, t)
+          svg.makeCircle(cps[0], 3, '#f00')
+          svg.makeCircle(cps[1], 3, '#f00')
+
+          pt.cps = cps
+
+          str += `C ${cps[0].x} ${cps[0].y} ${cps[1].x} ${cps[1].y} ${pt.x} ${pt.y}`
+
+          // if closed...
+          str += `C ${cps[0].x} ${cps[0].y} ${cps[1].x} ${cps[1].y} ${pts[0].x} ${pts[0].y}`
+
+
+          break
+        default:
+          p0 = pts[i-1]
+          p1 = pts[i]
+          p2 = pts[i+1]
+
+          svg.makeCircle(p1, 10, 'transparent', '#0f0', 3)
+          // console.log(p0, p1, p2)
+
+          cps = getControlPoints(p0, p1, p2, t)
+          svg.makeCircle(cps[0], 3, '#f00')
+          svg.makeCircle(cps[1], 3, '#f00')
+
+          pt.cps = cps
+          str += `C ${cps[0].x} ${cps[0].y} ${cps[1].x} ${cps[1].y} ${pt.x} ${pt.y}`
+          break
+      }
+    }
+    return str
   }
 
 }
 
+// adapted from this: http://scaledinnovation.com/analytics/splines/aboutSplines.html
+function getControlPoints(p0, p1, p2, t) {
+  let d01 = Math.sqrt(Math.pow(p1.x - p0.x, 2) + Math.pow(p1.y - p0.y, 2)); // distance between pt1 and pt2
+  let d12 = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)); // distance between pt2 and pt3
+  let fa = t * d01 / (d01+d12);   // scaling factor for triangle Ta
+  let fb = t * d12 / (d01+d12);   // ditto for Tb, simplifies to fb=t-fa
+  let cp1x = p1.x - fa * (p2.x - p0.x);    // x2-x0 is the width of triangle T
+  let cp1y = p1.y - fa * (p2.y - p0.y);    // y2-y0 is the height of T
+  let cp2x = p1.x + fb * (p2.x - p0.x);
+  let cp2y = p1.y + fb * (p2.y - p0.y);  
+  // return [{x: cp1x, y: cp1y}, {x: cp2x, y: cp2y}];
+  return [new Vec(cp1x, cp1y), new Vec(cp2x, cp2y)]
+}
+
+
+
+
+
+// class PathPoint {
+//   constructor(pt, type = 'LINE') {
+//     this.type = type
+//     this.x = pt.x
+//     this.y = pt.y
+//     this.z = pt.z
+//     this.t = null
+//     this.cp1 = {}
+//     this.cp2 = {}
+//   }
+// }
+
+
+// TILE 
+// (NOT SURE IF NECESSARY)
 
 class Tile {
   constructor(p1, p2) {
@@ -182,6 +345,10 @@ class Tile {
   }
 }
 
+
+// VECTORS.
+// BASICALLY POINTS. WITH EXTRAS.
+
 class Vec {
   constructor(x, y, z = 0) {
     this.x = x
@@ -189,12 +356,14 @@ class Vec {
     this.z = z
     this.m = Math.sqrt(this.x**2 + this.y**2 + this.z**2) // Magnitude
   }
+
   norm() {
     let xn = this.x / this.m,
         yn = this.y / this.m,
         zn = this.z / this.m
     return new Vec(xn, yn, zn)
   }
+  
   // ov = other Vec
   add(ov) {
     let xn = this.x + ov.x,
@@ -202,30 +371,36 @@ class Vec {
         zn = this.z + ov.z
     return new Vec(xn, yn, zn)
   }
+  
   sub(ov) {
     let xn = this.x - ov.x, 
         yn = this.y - ov.y,
         zn = this.z - ov.z
     return new Vec(xn, yn, zn)
   }
+  
   cross(ov) {
     let xn = this.y * ov.z - this.z * ov.y,
         yn = this.z * ov.x - this.x * ov.z,
         zn = this.x * ov.y - this.y * ov.x
     return new Vec(xn, yn, zn)
   }
+  
   dot(ov) {
     return this.x * ov.x + this.y * ov.y + this.z * ov.z
   }
+  
   ang(ov) {
     return Math.acos( this.norm().dot(ov.norm()) / (this.norm().m * ov.norm().m) )
   }
+  
   lerp(ov, t) {
     let xn = (1 - t) * this.x + ov.x * t,
         yn = (1 - t) * this.y + ov.y * t,
         zn = (1 - t) * this.z + ov.z * t
     return new Vec(xn, yn, zn)
   }
+  
   mid(ov) {
     let xn = (this.x + ov.x) / 2,
         yn = (this.y + ov.y) / 2,
@@ -235,26 +410,8 @@ class Vec {
 }
 
 
-/////// UTILITY FUNCTIONS.
-
-// Add random w/ seed.
-function rand() {
-  return Math.random()
-}
-
-function randInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min
-}
-
-function coinToss(chance) {
-  if (Math.random() <= chance / 100) {
-    return true
-  }
-}
-
-function map(val, minIn, maxIn, minOut, maxOut) {
-  val = (val - minIn) / (maxIn - minIn)
-  return minOut + val * (maxOut - minOut)
+function nVec(x, y, z) { 
+  return new Vec(x, y, z) 
 }
 
 function dist(a, b) {
@@ -279,6 +436,33 @@ function ang(a, b) {
   return Math.acos( dot(a.norm(), b.norm()) / (a.norm().m * b.norm().m) )
 }
 
+
+
+
+/////// UTILITY FUNCTIONS.
+
+// Add random w/ seed.
+function rand() {
+  return Math.random()
+}
+
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
+function coinToss(chance) {
+  if (Math.random() <= chance / 100) {
+    return true
+  } else {
+    return false
+  }
+}
+
+function map(val, minIn, maxIn, minOut, maxOut) {
+  val = (val - minIn) / (maxIn - minIn)
+  return minOut + val * (maxOut - minOut)
+}
+
 function rad(deg) {
   return deg * (Math.PI / 180)
 }
@@ -287,7 +471,7 @@ function deg(rad) {
   return rad / (Math.PI / 180)
 }
 
-// Divide length between to points. Returns intermediary Points. Not so sure.
+// Divide length between to points. Returns intermediary Points.
 // Looks very end-heavy to me. not really random.
 // Maybe add a minimum Distance.
 function divLength(a, b, nSeg, t = 1/nSeg, outA = []) {
@@ -305,7 +489,7 @@ function divLength(a, b, nSeg, t = 1/nSeg, outA = []) {
   return outA
 }
 
-
+function cLog(val) { console.log(val) }
 
 
 
