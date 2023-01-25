@@ -237,12 +237,13 @@ class Path {
 
       switch(i) {
         case 0:
+          console.log('case 0: ' + i)
           p0 = pts[pts.length-1]
           p1 = pts[i]
           p2 = pts[i+1]
 
-          svg.makeCircle(p1, 10, 'transparent', '#0f0', 3)
-          // console.log(p0, p1, p2)
+          svg.makeCircle(p1, 10, 'transparent', '#00f', 3)
+          console.log(p0, p1, p2)
 
           cps = getControlPoints(p0, p1, p2, t)
           svg.makeCircle(cps[0], 3, '#f00')
@@ -252,12 +253,13 @@ class Path {
 
           str += `${pt.x} ${pt.y}`
           break
-        case pts.length-1:
-          p0 = pts[i-1]
-          p1 = pts[i]
+        case pts.length-2:
+          console.log('case -2: ' + i)
+          p0 = pts[i]
+          p1 = pts[i+1]
           p2 = pts[0]
 
-          svg.makeCircle(p1, 10, 'transparent', '#0f0', 3)
+          svg.makeCircle(p0, 10, 'transparent', '#0ff', 3)
           // console.log(p0, p1, p2)
 
           cps = getControlPoints(p0, p1, p2, t)
@@ -266,19 +268,36 @@ class Path {
 
           pt.cps = cps
 
-          str += `C ${cps[0].x} ${cps[0].y} ${cps[1].x} ${cps[1].y} ${pt.x} ${pt.y}`
-
-          // if closed...
-          str += `C ${cps[0].x} ${cps[0].y} ${cps[1].x} ${cps[1].y} ${pts[0].x} ${pts[0].y}`
-
+          str += `C ${cps[0].x} ${cps[0].y} ${cps[1].x} ${cps[1].y} ${p2.x} ${p2.y}`
 
           break
+        case pts.length-1:
+          console.log('case -1: ' + i)
+          p0 = pts[i]
+          p1 = pts[0]
+          p2 = pts[1]
+
+          svg.makeCircle(p0, 10, 'transparent', '#f00', 3)
+          // console.log(p0, p1, p2)
+
+          cps = getControlPoints(p0, p1, p2, t)
+          svg.makeCircle(cps[0], 3, '#f00')
+          svg.makeCircle(cps[1], 3, '#f00')
+
+          pt.cps = cps
+
+          str += `C ${cps[0].x} ${cps[0].y} ${cps[1].x} ${cps[1].y} ${p2.x} ${p2.y}`
+
+          // if closed...
+          str += `C ${cps[0].x} ${cps[0].y} ${cps[1].x} ${cps[1].y} ${pts[1].x} ${pts[1].y}`
+          break
         default:
+          console.log('case def: ' + i)
           p0 = pts[i-1]
           p1 = pts[i]
           p2 = pts[i+1]
 
-          svg.makeCircle(p1, 10, 'transparent', '#0f0', 3)
+          svg.makeCircle(p0, 10, 'transparent', '#0f0', 3)
           // console.log(p0, p1, p2)
 
           cps = getControlPoints(p0, p1, p2, t)
@@ -286,10 +305,11 @@ class Path {
           svg.makeCircle(cps[1], 3, '#f00')
 
           pt.cps = cps
-          str += `C ${cps[0].x} ${cps[0].y} ${cps[1].x} ${cps[1].y} ${pt.x} ${pt.y}`
+          str += `C ${pts[i-1].cps[0].x} ${pts[i-1].cps[0].y} ${cps[1].x} ${cps[1].y} ${p2.x} ${p2.y}`
           break
       }
     }
+    console.log(str)
     return str
   }
 
@@ -305,6 +325,7 @@ function getControlPoints(p0, p1, p2, t) {
   let cp1y = p1.y - fa * (p2.y - p0.y);    // y2-y0 is the height of T
   let cp2x = p1.x + fb * (p2.x - p0.x);
   let cp2y = p1.y + fb * (p2.y - p0.y);  
+
   // return [{x: cp1x, y: cp1y}, {x: cp2x, y: cp2y}];
   return [new Vec(cp1x, cp1y), new Vec(cp2x, cp2y)]
 }
