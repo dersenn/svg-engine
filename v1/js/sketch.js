@@ -42,6 +42,8 @@ for (let x = 0; x < nCols; x++) {
     )
 
 
+
+
     // hmm, this????
     pts = pts.concat(pts[0])
 
@@ -70,6 +72,10 @@ for (let x = 0; x < nCols; x++) {
 
     }
 
+
+
+
+    
     // console.log(d)
     svg.makePath(d, '#0f0', 'transparent', 1)
 
