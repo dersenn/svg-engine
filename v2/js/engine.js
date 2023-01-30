@@ -9,6 +9,9 @@
 // — nice to have: color object or methods.
 // — nice to have: modularize???
 // — maybe get rid of z-coordinates... it's 2d after all. but maybe useful for noise etc. (?)
+// — <g> (group). but needs a bit of thinking re: parent.
+
+
 // — fuckin do something with it :-)
 
 
@@ -126,25 +129,15 @@ class SVG {
     this.stage.append(path)
     return path
   }
-
-  // Hmm... Group only useful if i can set this as parent for other Elements. Maybe I still need to split this up a bit more... Maybe an Elements Class???
-
-  // makeGroup(id) {
-  //   let group = document.createElementNS(this.ns, 'g')
-  //   group.setAttribute('id', id)
-  //   this.stage.append(group)
-  //   return group
-  // }
-
 }
 
 class Path {
-  constructor(pts = [new Vec(0,0)], close = false) {
+  constructor(pts = [], close = false) {
     this.pts = pts
     this.close = close
   }
   
-  buildPolygon() {
+  buildPolygon(close = this.close) {
     let str = 'M '
     for (let i = 0; i < this.pts.length; i++) {
       let pt = this.pts[i]
@@ -157,39 +150,23 @@ class Path {
           break
       }
     }
-    if (this.close) {str += ' Z'}
+    if (close) {str += ' Z'}
     return str
   }
 
   // Quadratic
-  buildQuadBez() {
+  buildQuadBez(t = .5, close = this.close) {
     let str = 'M '
     for (let i = 0; i < this.pts.length; i++) {
       let pt = this.pts[i]
       let cp, m, p
+
       switch(i) {
         case 0:
-          console.log('case 0')
           str += `${pt.x} ${pt.y}`
           break
 
-        // case 1:
-        //   cLog('case 1')
-        //   m = pt.mid(pts[i-1])
-        //   svg.makeCircle(m, 5, '#00f')
-
-        //   p = nVec(m.x + 100, m.y + 100)
-        //   svg.makeCircle(p, 5, '#0ff')
-
-        //   cp = m.lerp(p, .5)
-        //   svg.makeCircle(cp, 5, '#f00')
-
-        //   str += ` S ${cp.x} ${cp.y} ${pt.x} ${pt.y}`
-
-        //   break
-
         case this.pts.length-1:
-          console.log('huhu', i)
 
           m = pt.mid(pts[i-1])
           // svg.makeCircle(m, 5, '#00f')
@@ -197,19 +174,19 @@ class Path {
           p = nVec(m.x + 100, m.y + 100)
           // svg.makeCircle(p, 5, '#0ff')
 
-          cp = m.lerp(p, .5)
+          cp = m.lerp(p, t)
           // svg.makeCircle(cp, 5, '#f00')
 
           str += ` S ${cp.x} ${cp.y} ${pt.x} ${pt.y}`
 
-          if (this.close) {
+          if (close) {
             m = pts[0].mid(pt)
             // svg.makeCircle(m, 5, '#00f')
   
             p = nVec(m.x + 100, m.y + 100)
             // svg.makeCircle(p, 5, '#0ff')
   
-            cp = m.lerp(p, .5)
+            cp = m.lerp(p, t)
             // svg.makeCircle(cp, 5, '#f00')
   
             str += ` S ${cp.x} ${cp.y} ${pts[0].x} ${pts[0].y}`  
@@ -217,53 +194,66 @@ class Path {
           break
 
         default:
-          console.log('default', i)
 
           m = pt.mid(pts[i-1])
-          // svg.makeCircle(m, 5, '#00f')
+          svg.makeCircle(m, 5, '#ccc')
 
           p = nVec(m.x + 100, m.y + 100)
-          // svg.makeCircle(p, 5, '#0ff')
+          svg.makeCircle(p, 5, '#0ff')
 
           cp = m.lerp(p, .5)
-          // svg.makeCircle(cp, 5, '#f00')
+          svg.makeCircle(cp, 5, '#f00')
 
           str += ` S ${cp.x} ${cp.y} ${pt.x} ${pt.y}`
 
           break
       }
     }
-    if (this.close) {str += ' Z'}
+    if (close) {str += ' Z'}
     return str
   }
 
-  buildSpline(t = .4) {
+  buildSpline(t = .4, close = this.close) {
     let pts = this.pts
     let str = 'M '
     for (let i = 0; i < pts.length; i++) {
-
-      let p0, p1, p2, cps
+      let p0, p1, p2, cPts
 
       switch(i) {
         case 0:
           p0 = pts[pts.length-1]
           p1 = pts[i]
           p2 = pts[i+1]
-          cps = getControlPoints(p0, p1, p2, t)
-          p1.cps = cps
+          cPts = getControlPoints(p0, p1, p2, t)
+          p1.cPts = cPts
           str += `${p1.x} ${p1.y}`
+          break
+
+        case 1:
+          p0 = pts[i-1]
+          p1 = pts[i]
+          p2 = pts[i+1]
+          cPts = getControlPoints(p0, p1, p2, t)
+          p1.cPts = cPts
+          if (close) {
+            str += `C ${p0.cPts[1].x} ${p0.cPts[1].y} ${p1.cPts[0].x} ${p1.cPts[0].y} ${p1.x} ${p1.y} `
+          } else {
+            str += `Q ${p1.cPts[0].x} ${p1.cPts[0].y} ${p1.x} ${p1.y} `
+          }
           break
 
         case pts.length-1:
           p0 = pts[i-1]
           p1 = pts[i]
           p2 = pts[0]
-          cps = getControlPoints(p0, p1, p2, t)
-          p1.cps = cps
-          str += `C ${p0.cps[1].x} ${p0.cps[1].y} ${p1.cps[0].x} ${p1.cps[0].y} ${p1.x} ${p1.y} `
+          cPts = getControlPoints(p0, p1, p2, t)
+          p1.cPts = cPts
 
-          if (this.close) {
-            str += `C ${p1.cps[1].x} ${p1.cps[1].y} ${p2.cps[0].x} ${p2.cps[0].y} ${p2.x} ${p2.y} Z`
+          if (close) {
+            str += `C ${p0.cPts[1].x} ${p0.cPts[1].y} ${p1.cPts[0].x} ${p1.cPts[0].y} ${p1.x} ${p1.y} `
+            str += `C ${p1.cPts[1].x} ${p1.cPts[1].y} ${p2.cPts[0].x} ${p2.cPts[0].y} ${p2.x} ${p2.y} Z`
+          } else {
+            str += `Q ${p0.cPts[1].x} ${p0.cPts[1].y} ${p1.x} ${p1.y} `
           }
           break
 
@@ -271,21 +261,20 @@ class Path {
           p0 = pts[i-1]
           p1 = pts[i]
           p2 = pts[i+1]
-          cps = getControlPoints(p0, p1, p2, t)
-          p1.cps = cps
-          str += `C ${p0.cps[1].x} ${p0.cps[1].y} ${p1.cps[0].x} ${p1.cps[0].y} ${p1.x} ${p1.y} `
+          cPts = getControlPoints(p0, p1, p2, t)
+          p1.cPts = cPts
+          str += `C ${p0.cPts[1].x} ${p0.cPts[1].y} ${p1.cPts[0].x} ${p1.cPts[0].y} ${p1.x} ${p1.y} `
           break
       }
     }
-    console.log(str)
     return str
   }
 
 }
 
-// adapted from this: http://scaledinnovation.com/analytics/splines/aboutSplines.html
-// Builds Control Points for p1!!
 function getControlPoints(p0, p1, p2, t) {
+  // adapted from this: http://scaledinnovation.com/analytics/splines/aboutSplines.html
+  // Builds Control Points for p1!!
   let d01 = Math.sqrt(Math.pow(p1.x - p0.x, 2) + Math.pow(p1.y - p0.y, 2)); // distance between pt1 and pt2
   let d12 = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)); // distance between pt2 and pt3
   let fa = t * d01 / (d01+d12);   // scaling factor for triangle Ta
@@ -296,22 +285,6 @@ function getControlPoints(p0, p1, p2, t) {
   let cp2y = p1.y + fb * (p2.y - p0.y);  
   return [new Vec(cp1x, cp1y), new Vec(cp2x, cp2y)]
 }
-
-
-
-
-
-// class PathPoint {
-//   constructor(pt, type = 'LINE') {
-//     this.type = type
-//     this.x = pt.x
-//     this.y = pt.y
-//     this.z = pt.z
-//     this.t = null
-//     this.cp1 = {}
-//     this.cp2 = {}
-//   }
-// }
 
 
 // TILE 

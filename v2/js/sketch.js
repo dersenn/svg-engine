@@ -14,37 +14,24 @@ const defaults = {
 let svg = new SVG(setup, defaults)
 
 
-
 let pts = [
-  new Vec(svg.w*rand(), 0),
-  new Vec(svg.w/3, svg.h/3),
-  new Vec(svg.w/3, svg.h*.75),
-  new Vec(svg.w/2, svg.h*.75),
-  new Vec(randInt(70,100)/100 * svg.w, randInt(70,100)/100 * svg.h)
+  new Vec(svg.w*(randInt(1, 9)/10), svg.h*.1),
+  new Vec(svg.w*(randInt(1, 9)/10), svg.h*.25),
+  new Vec(svg.w*(randInt(1, 9)/10), svg.h*.5),
+  new Vec(svg.w*(randInt(1, 9)/10), svg.h*.75),
+  new Vec(svg.w*(randInt(1, 9)/10), svg.h*.9)
 ]
 
+let path = new Path(pts, true)
+
+// let polygon = svg.makePath(path.buildPolygon(), 'transparent', '#0f0', 1)
+// let spline = svg.makePath(path.buildSpline(.6, true), 'transparent', '#f00', 2)
+let quad = svg.makePath(path.buildQuadBez(true), 'transparent', '#00f', 4)
+
+
 for (let i = 0; i < pts.length; i++) {
-  // const pt = svg.makeCircle(pts[i], 5, '#000')
+  const pt = svg.makeCircle(pts[i], 5, '#000')
 }
-
-let path = new Path(pts, false)
-
-let polygon = svg.makePath(path.buildPolygon(), 'transparent', '#0f0', 1)
-
-// let quadratic = svg.makePath(path.buildQuadBez(), 'transparent', '#00f', 1)
-
-let spline = svg.makePath(path.buildSpline(), 'transparent', '#f00', 2)
-// console.log(path.buildSpline())
-
-
-let tp1 = {x: 10, y:10},
-    tp2 = {x: 20, y:20},
-    tp3 = {x: 30, y:10}
-
-
-let test = getControlPoints(tp1, tp2, tp3, 0.5)
-
-console.log(test)
 
 
 // My Only Friend, The End.
