@@ -16,7 +16,7 @@ let svg = new SVG(setup, defaults)
 
 
 let pts = [
-  new Vec(svg.w*.75, svg.h*.25),
+  new Vec(svg.w*rand(), 0),
   new Vec(svg.w/3, svg.h/3),
   new Vec(svg.w/3, svg.h*.75),
   new Vec(svg.w/2, svg.h*.75),
@@ -27,7 +27,7 @@ for (let i = 0; i < pts.length; i++) {
   // const pt = svg.makeCircle(pts[i], 5, '#000')
 }
 
-let path = new Path(pts, true)
+let path = new Path(pts, false)
 
 let polygon = svg.makePath(path.buildPolygon(), 'transparent', '#0f0', 1)
 

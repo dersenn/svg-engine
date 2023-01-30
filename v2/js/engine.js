@@ -249,15 +249,8 @@ class Path {
           p0 = pts[pts.length-1]
           p1 = pts[i]
           p2 = pts[i+1]
-
-          svg.makeCircle(p1, 10, 'transparent', '#00f', 3)
-
           cps = getControlPoints(p0, p1, p2, t)
-          svg.makeCircle(cps[0], 3, '#00f')
-          svg.makeCircle(cps[1], 3, '#00f')
-
           p1.cps = cps
-
           str += `${p1.x} ${p1.y}`
           break
 
@@ -265,19 +258,12 @@ class Path {
           p0 = pts[i-1]
           p1 = pts[i]
           p2 = pts[0]
-
-          svg.makeCircle(p1, 10, 'transparent', '#0f0', 3)
-
           cps = getControlPoints(p0, p1, p2, t)
-          svg.makeCircle(cps[0], 3, '#0f0')
-          svg.makeCircle(cps[1], 3, '#0f0')
-
           p1.cps = cps
           str += `C ${p0.cps[1].x} ${p0.cps[1].y} ${p1.cps[0].x} ${p1.cps[0].y} ${p1.x} ${p1.y} `
 
-          // if closed...
           if (this.close) {
-            str += `C ${p1.cps[1].x} ${p1.cps[1].y} ${p2.cps[0].x} ${p2.cps[0].y} ${p2.x} ${p2.y} `
+            str += `C ${p1.cps[1].x} ${p1.cps[1].y} ${p2.cps[0].x} ${p2.cps[0].y} ${p2.x} ${p2.y} Z`
           }
           break
 
@@ -285,25 +271,20 @@ class Path {
           p0 = pts[i-1]
           p1 = pts[i]
           p2 = pts[i+1]
-
-          svg.makeCircle(p1, 10, 'transparent', '#0f0', 3)
-
           cps = getControlPoints(p0, p1, p2, t)
-          svg.makeCircle(cps[0], 3, '#0f0')
-          svg.makeCircle(cps[1], 3, '#0f0')
-
           p1.cps = cps
           str += `C ${p0.cps[1].x} ${p0.cps[1].y} ${p1.cps[0].x} ${p1.cps[0].y} ${p1.x} ${p1.y} `
           break
       }
     }
-    // console.log(str)
+    console.log(str)
     return str
   }
 
 }
 
 // adapted from this: http://scaledinnovation.com/analytics/splines/aboutSplines.html
+// Builds Control Points for p1!!
 function getControlPoints(p0, p1, p2, t) {
   let d01 = Math.sqrt(Math.pow(p1.x - p0.x, 2) + Math.pow(p1.y - p0.y, 2)); // distance between pt1 and pt2
   let d12 = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)); // distance between pt2 and pt3
@@ -313,8 +294,6 @@ function getControlPoints(p0, p1, p2, t) {
   let cp1y = p1.y - fa * (p2.y - p0.y);    // y2-y0 is the height of T
   let cp2x = p1.x + fb * (p2.x - p0.x);
   let cp2y = p1.y + fb * (p2.y - p0.y);  
-
-  // return [{x: cp1x, y: cp1y}, {x: cp2x, y: cp2y}];
   return [new Vec(cp1x, cp1y), new Vec(cp2x, cp2y)]
 }
 
