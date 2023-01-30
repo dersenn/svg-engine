@@ -1,5 +1,14 @@
-// 24-01-2023
+// 30-01-2023
 // Reset The Preset.
+
+// To Do:
+// — get spline to work
+// — implement fxhash or similar prng (use own rand() in all methods etc.!!!)
+// — nice to have: working defaults.
+// — nice to have: add shortcuts to setAttribute... e.g. strokeCap(5)
+// — nice to have: color object or methods.
+// — fuckin do something with it :-)
+
 
 class SVG {
   constructor(setup) {
