@@ -37,5 +37,14 @@ let spline = svg.makePath(path.buildSpline(), 'transparent', '#f00', 2)
 // console.log(path.buildSpline())
 
 
+let tp1 = {x: 10, y:10},
+    tp2 = {x: 20, y:20},
+    tp3 = {x: 30, y:10}
+
+
+let test = getControlPoints(tp1, tp2, tp3, 0.5)
+
+console.log(test)
+
 
 // My Only Friend, The End.

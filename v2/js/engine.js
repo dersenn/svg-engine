@@ -7,6 +7,8 @@
 // — nice to have: working defaults.
 // — nice to have: add shortcuts to setAttribute... e.g. strokeCap(5)
 // — nice to have: color object or methods.
+// — nice to have: modularize???
+// — maybe get rid of z-coordinates... it's 2d after all. but maybe useful for noise etc. (?)
 // — fuckin do something with it :-)
 
 
@@ -140,7 +142,6 @@ class Path {
   constructor(pts = [new Vec(0,0)], close = false) {
     this.pts = pts
     this.close = close
-
   }
   
   buildPolygon() {
@@ -168,7 +169,7 @@ class Path {
       let cp, m, p
       switch(i) {
         case 0:
-          cLog('case 0')
+          console.log('case 0')
           str += `${pt.x} ${pt.y}`
           break
 
@@ -236,85 +237,63 @@ class Path {
     return str
   }
 
-  buildSpline(t = .2) {
+  buildSpline(t = .4) {
     let pts = this.pts
     let str = 'M '
     for (let i = 0; i < pts.length; i++) {
 
-      let pt = pts[i]
-      let p0, p1, p2, mid, cps
+      let p0, p1, p2, cps
 
       switch(i) {
         case 0:
-          console.log('case 0: ' + i)
           p0 = pts[pts.length-1]
           p1 = pts[i]
           p2 = pts[i+1]
 
           svg.makeCircle(p1, 10, 'transparent', '#00f', 3)
-          // cosnsole.log(p0, p1, p2)
 
           cps = getControlPoints(p0, p1, p2, t)
           svg.makeCircle(cps[0], 3, '#00f')
           svg.makeCircle(cps[1], 3, '#00f')
 
-          pt.cps = cps
+          p1.cps = cps
 
-          str += `${pt.x} ${pt.y}`
+          str += `${p1.x} ${p1.y}`
           break
-        case pts.length-2:
-          console.log('case -2: ' + i)
-          p0 = pts[i-1]
-          p1 = pts[i]
-          p2 = pts[i+1]
 
-          svg.makeCircle(p1, 10, 'transparent', '#0ff', 3)
-          // console.log(p0, p1, p2)
-
-          cps = getControlPoints(p0, p1, p2, t)
-          svg.makeCircle(cps[0], 3, '#0ff')
-          svg.makeCircle(cps[1], 3, '#0ff')
-
-          pt.cps = cps
-
-          str += `C ${cps[0].x} ${cps[0].y} ${cps[1].x} ${cps[1].y} ${p2.x} ${p2.y}`
-
-          break
         case pts.length-1:
-          console.log('case -1: ' + i)
           p0 = pts[i-1]
           p1 = pts[i]
           p2 = pts[0]
 
-          svg.makeCircle(p1, 10, 'transparent', '#f00', 3)
-          // console.log(p0, p1, p2)
-
-          cps = getControlPoints(p0, p1, p2, t)
-          svg.makeCircle(cps[0], 3, '#f00')
-          svg.makeCircle(cps[1], 3, '#f00')
-
-          pt.cps = cps
-
-          str += `C ${cps[0].x} ${cps[0].y} ${cps[1].x} ${cps[1].y} ${p2.x} ${p2.y}`
-
-          // if closed...
-          // str += `C ${cps[0].x} ${cps[0].y} ${cps[1].x} ${cps[1].y} ${pts[1].x} ${pts[1].y}`
-          break
-        default:
-          console.log('case def: ' + i)
-          p0 = pts[i-1]
-          p1 = pts[i]
-          p2 = pts[i+1]
-
           svg.makeCircle(p1, 10, 'transparent', '#0f0', 3)
-          // console.log(p0, p1, p2)
 
           cps = getControlPoints(p0, p1, p2, t)
           svg.makeCircle(cps[0], 3, '#0f0')
           svg.makeCircle(cps[1], 3, '#0f0')
 
-          pt.cps = cps
-          str += `C ${cps[0].x} ${cps[0].y} ${cps[1].x} ${cps[1].y} ${p2.x} ${p2.y}`
+          p1.cps = cps
+          str += `C ${p0.cps[1].x} ${p0.cps[1].y} ${p1.cps[0].x} ${p1.cps[0].y} ${p1.x} ${p1.y} `
+
+          // if closed...
+          if (this.close) {
+            str += `C ${p1.cps[1].x} ${p1.cps[1].y} ${p2.cps[0].x} ${p2.cps[0].y} ${p2.x} ${p2.y} `
+          }
+          break
+
+        default:
+          p0 = pts[i-1]
+          p1 = pts[i]
+          p2 = pts[i+1]
+
+          svg.makeCircle(p1, 10, 'transparent', '#0f0', 3)
+
+          cps = getControlPoints(p0, p1, p2, t)
+          svg.makeCircle(cps[0], 3, '#0f0')
+          svg.makeCircle(cps[1], 3, '#0f0')
+
+          p1.cps = cps
+          str += `C ${p0.cps[1].x} ${p0.cps[1].y} ${p1.cps[0].x} ${p1.cps[0].y} ${p1.x} ${p1.y} `
           break
       }
     }
@@ -393,7 +372,7 @@ class Vec {
         zn = this.z / this.m
     return new Vec(xn, yn, zn)
   }
-  
+
   // ov = other Vec
   add(ov) {
     let xn = this.x + ov.x,
@@ -401,36 +380,36 @@ class Vec {
         zn = this.z + ov.z
     return new Vec(xn, yn, zn)
   }
-  
+
   sub(ov) {
     let xn = this.x - ov.x, 
         yn = this.y - ov.y,
         zn = this.z - ov.z
     return new Vec(xn, yn, zn)
   }
-  
+
   cross(ov) {
     let xn = this.y * ov.z - this.z * ov.y,
         yn = this.z * ov.x - this.x * ov.z,
         zn = this.x * ov.y - this.y * ov.x
     return new Vec(xn, yn, zn)
   }
-  
+
   dot(ov) {
     return this.x * ov.x + this.y * ov.y + this.z * ov.z
   }
-  
+
   ang(ov) {
     return Math.acos( this.norm().dot(ov.norm()) / (this.norm().m * ov.norm().m) )
   }
-  
+
   lerp(ov, t) {
     let xn = (1 - t) * this.x + ov.x * t,
         yn = (1 - t) * this.y + ov.y * t,
         zn = (1 - t) * this.z + ov.z * t
     return new Vec(xn, yn, zn)
   }
-  
+
   mid(ov) {
     let xn = (this.x + ov.x) / 2,
         yn = (this.y + ov.y) / 2,
@@ -519,7 +498,46 @@ function divLength(a, b, nSeg, t = 1/nSeg, outA = []) {
   return outA
 }
 
-function cLog(val) { console.log(val) }
+
+
+
+
+// EX FXHASH
+
+
+//---- do not edit the following code (you can indent as you wish)
+let alphabet = "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"
+var fxhash = "oo" + Array(49).fill(0).map(_=>alphabet[(Math.random()*alphabet.length)|0]).join('')
+let b58dec = str=>[...str].reduce((p,c)=>p*alphabet.length+alphabet.indexOf(c)|0, 0)
+let fxhashTrunc = fxhash.slice(2)
+let regex = new RegExp(".{" + ((fxhashTrunc.length/4)|0) + "}", 'g')
+let hashes = fxhashTrunc.match(regex).map(h => b58dec(h))
+let sfc32 = (a, b, c, d) => {
+  return () => {
+    a |= 0; b |= 0; c |= 0; d |= 0
+    var t = (a + b | 0) + d | 0
+    d = d + 1 | 0
+    a = b ^ b >>> 9
+    b = c + (c << 3) | 0
+    c = c << 21 | c >>> 11
+    c = c + t | 0
+    return (t >>> 0) / 4294967296
+  }
+}
+var fxrand = sfc32(...hashes)
+// true if preview mode active, false otherwise
+// you can append preview=1 to the URL to simulate preview active
+var isFxpreview = new URLSearchParams(window.location.search).get('preview') === "1"
+// call this method to trigger the preview
+function fxpreview() {
+  console.log("fxhash: TRIGGER PREVIEW")
+}
+//---- /do not edit the following code
+
+
+
+
+
 
 
 
