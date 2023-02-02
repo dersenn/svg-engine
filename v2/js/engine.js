@@ -214,6 +214,9 @@ class Path {
   }
 
   buildSpline(t = .4, close = this.close) {
+
+    // doesn't work if pts.length < 3
+    
     let pts = this.pts
     let str = 'M '
     for (let i = 0; i < pts.length; i++) {
@@ -224,7 +227,7 @@ class Path {
           p0 = pts[pts.length-1]
           p1 = pts[i]
           p2 = pts[i+1]
-          cPts = getControlPoints(p0, p1, p2, t)
+          cPts = getControlPointsSpline(p0, p1, p2, t)
           p1.cPts = cPts
           str += `${p1.x} ${p1.y}`
           break
@@ -233,7 +236,7 @@ class Path {
           p0 = pts[i-1]
           p1 = pts[i]
           p2 = pts[i+1]
-          cPts = getControlPoints(p0, p1, p2, t)
+          cPts = getControlPointsSpline(p0, p1, p2, t)
           p1.cPts = cPts
           if (close) {
             str += `C ${p0.cPts[1].x} ${p0.cPts[1].y} ${p1.cPts[0].x} ${p1.cPts[0].y} ${p1.x} ${p1.y} `
@@ -246,7 +249,7 @@ class Path {
           p0 = pts[i-1]
           p1 = pts[i]
           p2 = pts[0]
-          cPts = getControlPoints(p0, p1, p2, t)
+          cPts = getControlPointsSpline(p0, p1, p2, t)
           p1.cPts = cPts
 
           if (close) {
@@ -261,7 +264,7 @@ class Path {
           p0 = pts[i-1]
           p1 = pts[i]
           p2 = pts[i+1]
-          cPts = getControlPoints(p0, p1, p2, t)
+          cPts = getControlPointsSpline(p0, p1, p2, t)
           p1.cPts = cPts
           str += `C ${p0.cPts[1].x} ${p0.cPts[1].y} ${p1.cPts[0].x} ${p1.cPts[0].y} ${p1.x} ${p1.y} `
           break
@@ -272,7 +275,7 @@ class Path {
 
 }
 
-function getControlPoints(p0, p1, p2, t) {
+function getControlPointsSpline(p0, p1, p2, t) {
   // adapted from this: http://scaledinnovation.com/analytics/splines/aboutSplines.html
   // Builds Control Points for p1!!
   let d01 = Math.sqrt(Math.pow(p1.x - p0.x, 2) + Math.pow(p1.y - p0.y, 2)); // distance between pt1 and pt2
@@ -387,6 +390,14 @@ function lerp(a, b, t) {
       yn = (1 - t) * a.y + b.y * t,
       zn = (1 - t) * a.z + b.z * t
   return new Vec(xn, yn, zn)
+}
+
+function mid(a, b) {
+  return lerp(a, b, .5)
+  // let xn = (a.x + b.x) / 2,
+  //     yn = (a.y + b.y) / 2,
+  //     zn = (a.z + b.z) / 2
+  // return new Vec(xn, yn, zn)
 }
 
 function dot(a, b) {
