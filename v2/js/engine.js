@@ -155,7 +155,7 @@ class Path {
   }
 
   // Quadratic
-  buildQuadBez(t = .5, close = this.close) {
+  buildQuadBez(close = false, t = .5) {
     let str = 'M '
     for (let i = 0; i < this.pts.length; i++) {
       let pt = this.pts[i]
@@ -164,47 +164,29 @@ class Path {
       switch(i) {
         case 0:
           str += `${pt.x} ${pt.y}`
+          svg.makeCircle(pt, 5, '#00f')
+
           break
 
         case this.pts.length-1:
 
-          m = pt.mid(pts[i-1])
-          // svg.makeCircle(m, 5, '#00f')
-
-          p = nVec(m.x + 100, m.y + 100)
-          // svg.makeCircle(p, 5, '#0ff')
-
-          cp = m.lerp(p, t)
-          // svg.makeCircle(cp, 5, '#f00')
-
+          cp = getControlPointQuad(pts[i-1], pt, t)
           str += ` S ${cp.x} ${cp.y} ${pt.x} ${pt.y}`
+          svg.makeCircle(pt, 5, '#f00')
 
           if (close) {
-            m = pts[0].mid(pt)
-            // svg.makeCircle(m, 5, '#00f')
-  
-            p = nVec(m.x + 100, m.y + 100)
-            // svg.makeCircle(p, 5, '#0ff')
-  
-            cp = m.lerp(p, t)
-            // svg.makeCircle(cp, 5, '#f00')
-  
-            str += ` S ${cp.x} ${cp.y} ${pts[0].x} ${pts[0].y}`  
+            let tt = t * -1
+            let ccp = getControlPointQuad(pt, pts[0], tt)
+            str += ` S ${cp.x} ${cp.y} ${pts[0].x} ${pts[0].y}`
           }
+
           break
 
         default:
 
-          m = pt.mid(pts[i-1])
-          svg.makeCircle(m, 5, '#ccc')
-
-          p = nVec(m.x + 100, m.y + 100)
-          svg.makeCircle(p, 5, '#0ff')
-
-          cp = m.lerp(p, .5)
-          svg.makeCircle(cp, 5, '#f00')
-
+          cp = getControlPointQuad(pts[i-1], pt, t)
           str += ` S ${cp.x} ${cp.y} ${pt.x} ${pt.y}`
+          svg.makeCircle(pt, 5, '#000')
 
           break
       }
@@ -216,7 +198,7 @@ class Path {
   buildSpline(t = .4, close = this.close) {
 
     // doesn't work if pts.length < 3
-    
+
     let pts = this.pts
     let str = 'M '
     for (let i = 0; i < pts.length; i++) {
@@ -274,6 +256,21 @@ class Path {
   }
 
 }
+
+function getControlPointQuad(a, b, t = 0.5, d = 0.5) {
+  let m = b.sub(a)
+  let p = lerp(a, b, d)
+  let perp = nVec(-m.norm().y, m.norm().x)
+  let amp = t * ( dist(a, b) / 2 )
+
+  let cp = nVec(
+    p.x + amp * perp.x,
+    p.y + amp * perp.y
+  )
+  // svg.makeCircle(cp, 10, 'transparent', '#0f0', 2)
+  return cp
+}
+
 
 function getControlPointsSpline(p0, p1, p2, t) {
   // adapted from this: http://scaledinnovation.com/analytics/splines/aboutSplines.html
