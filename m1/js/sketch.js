@@ -14,24 +14,47 @@ const defaults = {
 let svg = new SVG(setup, defaults)
 
 
-let pts = [
-  new Vec(svg.w*(randInt(1, 9)/10), svg.h*.1),
-  new Vec(svg.w*(randInt(1, 9)/10), svg.h*.25),
-  new Vec(svg.w*(randInt(1, 9)/10), svg.h*.5),
-  new Vec(svg.w*(randInt(1, 9)/10), svg.h*.75),
-  new Vec(svg.w*(randInt(1, 9)/10), svg.h*.9)
+const nLines = 10
+const cols = [
+  '#0ff',
+  '#ff0',
+  '#00f',
+  '#f0f'
 ]
 
-let path = new Path(pts, true)
+zero = nVec(0,0)
+svg.makeRect(zero, svg.w, svg.h, '#fff')
 
-// let polygon = svg.makePath(path.buildPolygon(), 'transparent', '#0f0', 1)
-let spline = svg.makePath(path.buildSpline(.6, false), 'transparent', '#f00', 2)
-let quad = svg.makePath(path.buildQuadBez(), 'transparent', '#00f', 4)
+for (let l = 0; l < nLines; l++) {
+  let pts = [
+    new Vec(svg.w*rand(), svg.h*0),
+    new Vec(svg.w*rand(), svg.h*rand()),
+    // new Vec(svg.w*rand(), svg.h*.5),
+    // new Vec(svg.w*rand(), svg.h*.75),
+    new Vec(svg.w*rand(), svg.h*1)
+  ]
+  
+  let path = new Path(pts, true)
+  
+  let spline = svg.makePath(path.buildSpline(rand(), false), 'transparent', cols[randInt(0, cols.length-1)], randInt(1, 10))
+  let quad = svg.makePath(path.buildQuadBez(), 'transparent', cols[randInt(0, cols.length-1)], randInt(0, svg.w / nLines))
 
+  quad.setAttributeNS(null,'stroke-linecap', 'round')
 
-for (let i = 0; i < pts.length; i++) {
-  // const pt = svg.makeCircle(pts[i], 5, '#000')
+  // let poly = svg.makePath(path.buildPolygon(.3, true), 'transparent', cols[randInt(0, cols.length-1)], randInt(1, 100))
+  // poly.setAttributeNS(null, 'stroke-linejoin', 'round')
+ 
+  
+  for (let i = 0; i < pts.length; i++) {
+    const pt = svg.makeCircle(pts[i], 5, '#000')
+  }
 }
+
+
+
+
+
+
 
 
 
