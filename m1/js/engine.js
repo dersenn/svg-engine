@@ -164,19 +164,19 @@ class Path {
       switch(i) {
         case 0:
           str += `${pt.x} ${pt.y}`
-          svg.makeCircle(pt, 5, '#00f')
+          // svg.makeCircle(pt, 5, '#00f')
 
           break
 
         case this.pts.length-1:
 
-          cp = getControlPointQuad(pts[i-1], pt, t)
+          cp = getControlPointQuad(this.pts[i-1], pt, t)
           str += ` S ${cp.x} ${cp.y} ${pt.x} ${pt.y}`
-          svg.makeCircle(pt, 5, '#f00')
+          // svg.makeCircle(pt, 5, '#f00')
 
           if (close) {
             let tt = t * -1
-            let ccp = getControlPointQuad(pt, pts[0], tt)
+            let ccp = getControlPointQuad(pt, this.pts[0], tt)
             str += ` S ${cp.x} ${cp.y} ${pts[0].x} ${pts[0].y}`
           }
 
@@ -184,9 +184,9 @@ class Path {
 
         default:
 
-          cp = getControlPointQuad(pts[i-1], pt, t)
+          cp = getControlPointQuad(this.pts[i-1], pt, t)
           str += ` S ${cp.x} ${cp.y} ${pt.x} ${pt.y}`
-          svg.makeCircle(pt, 5, '#000')
+          // svg.makeCircle(pt, 5, '#000')
 
           break
       }
