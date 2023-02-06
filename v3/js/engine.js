@@ -14,6 +14,9 @@
 // — do something with it :-)
 
 
+
+// THE MAIN THING
+
 class SVG {
   constructor(setup) {
     this.ns = 'http://www.w3.org/2000/svg'
@@ -23,21 +26,19 @@ class SVG {
     this.id = setup.id
     this.w = this.parent.clientWidth
     this.h = this.parent.clientHeight
+    this.c = new Vec(this.w/2, this.h/2)
     this.els = []
 
-    // not really working yet.
-    this.defaults()
+    // Find a Way to make those easily adjustable???
+    // But maybe this doesn't make sense.
+    this.def = {
+      fill: 'transparent',
+      stroke: '#000',
+      strokeW: 1
+    }
 
     // initialize and push to dom on creation.
     this.init()
-  }
-
-  defaults(fill = '#000', stroke = '#000', strokeW = 0) {
-    this.def = {
-      fill: fill,
-      stroke: stroke,
-      strokeW: strokeW
-    }
   }
 
   init() {
@@ -72,7 +73,6 @@ class SVG {
     line.setAttribute('y2', b.y)
     line.setAttribute('stroke', stroke)
     line.setAttribute('stroke-width', strokeW)
-    // this.els.push(line)
     this.stage.append(line)
     return line
   }
@@ -85,7 +85,6 @@ class SVG {
     circle.setAttribute('fill', fill)
     circle.setAttribute('stroke', stroke)
     circle.setAttribute('stroke-width', strokeW)
-    // this.els.push(circle)
     this.stage.append(circle)
     return circle
   }
@@ -99,7 +98,6 @@ class SVG {
     ellipse.setAttribute('fill', fill)
     ellipse.setAttribute('stroke', stroke)
     ellipse.setAttribute('stroke-width', strokeW)
-    // this.els.push(ellipse)
     this.stage.append(ellipse)
     return ellipse
   }
@@ -113,7 +111,6 @@ class SVG {
     rect.setAttribute('fill', fill)
     rect.setAttribute('stroke', stroke)
     rect.setAttribute('stroke-width', strokeW)
-    // this.els.push(rect)
     this.stage.append(rect)
     return rect
   }
@@ -124,18 +121,22 @@ class SVG {
     path.setAttribute('fill', fill)
     path.setAttribute('stroke', stroke)
     path.setAttribute('stroke-width', strokeW)
-    // this.els.push(path)
     this.stage.append(path)
     return path
   }
 }
+
+
+
+/////// PATH.
+/////// Helper class to make those d-strings etc.
 
 class Path {
   constructor(pts = [], close = false) {
     this.pts = pts
     this.close = close
   }
-  
+
   buildPolygon(close = this.close) {
     let str = 'M '
     for (let i = 0; i < this.pts.length; i++) {
@@ -153,31 +154,41 @@ class Path {
     return str
   }
 
-  // Quadratic
-  buildQuadBez(close = false, t = .5) {
+  // Quadratic Bezier
+
+  getControlPointQuad(a, b, t = 0.5, d = 0.5) {
+    let m = b.sub(a)
+    let p = lerp(a, b, d)
+    let perp = nVec(-m.norm().y, m.norm().x)
+    let amp = t * ( dist(a, b) / 2 )
+  
+    let cp = nVec(
+      p.x + amp * perp.x,
+      p.y + amp * perp.y
+    )
+    return cp
+  }
+
+  buildQuadBez(t = .5, d = .5, close = false) {
     let str = 'M '
     for (let i = 0; i < this.pts.length; i++) {
       let pt = this.pts[i]
       let cp
-
       switch(i) {
         case 0:
           str += `${pt.x} ${pt.y}`
           break
-
         case this.pts.length-1:
-          cp = getControlPointQuad(pts[i-1], pt, t)
+          cp = this.getControlPointQuad(pts[i-1], pt, t, d)
           str += ` S ${cp.x} ${cp.y} ${pt.x} ${pt.y}`
-
           if (close) {
             let tt = t * -1
-            let ccp = getControlPointQuad(pt, pts[0], tt)
+            let ccp = this.getControlPointQuad(pt, pts[0], tt, d)
             str += ` S ${cp.x} ${cp.y} ${pts[0].x} ${pts[0].y}`
           }
           break
-
         default:
-          cp = getControlPointQuad(pts[i-1], pt, t)
+          cp = this.getControlPointQuad(pts[i-1], pt, t, d)
           str += ` S ${cp.x} ${cp.y} ${pt.x} ${pt.y}`
           break
       }
@@ -186,44 +197,53 @@ class Path {
     return str
   }
 
-  buildSpline(t = .4, close = this.close) {
+  // Cubic Bezier / Spline
 
-    // doesn't work if pts.length < 3
+  getControlPointsSpline(p0, p1, p2, t) {
+    // adapted from this: http://scaledinnovation.com/analytics/splines/aboutSplines.html
+    // Builds Control Points for p1!!
+    let d01 = Math.sqrt(Math.pow(p1.x - p0.x, 2) + Math.pow(p1.y - p0.y, 2)); // distance between pt1 and pt2
+    let d12 = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)); // distance between pt2 and pt3
+    let fa = t * d01 / (d01+d12);   // scaling factor for triangle Ta
+    let fb = t * d12 / (d01+d12);   // ditto for Tb, simplifies to fb=t-fa
+    let cp1x = p1.x - fa * (p2.x - p0.x);    // x2-x0 is the width of triangle T
+    let cp1y = p1.y - fa * (p2.y - p0.y);    // y2-y0 is the height of T
+    let cp2x = p1.x + fb * (p2.x - p0.x);
+    let cp2y = p1.y + fb * (p2.y - p0.y);  
+    return [new Vec(cp1x, cp1y), new Vec(cp2x, cp2y)]
+  }
+
+  buildSpline(t = .4, close = this.close) {
+    // doesn't work if pts.length < 3 
+    // could be avoided with case 1 && !pts.length-1 (somehow)
     let pts = this.pts
     let str = 'M '
     for (let i = 0; i < pts.length; i++) {
       let p0, p1, p2, cPts
-
       switch(i) {
         case 0:
           p0 = pts[pts.length-1]
           p1 = pts[i]
           p2 = pts[i+1]
-          cPts = getControlPointsSpline(p0, p1, p2, t)
-          p1.cPts = cPts
+          p1.cPts = this.getControlPointsSpline(p0, p1, p2, t)
           str += `${p1.x} ${p1.y}`
           break
-
         case 1:
           p0 = pts[i-1]
           p1 = pts[i]
           p2 = pts[i+1]
-          cPts = getControlPointsSpline(p0, p1, p2, t)
-          p1.cPts = cPts
+          p1.cPts = this.getControlPointsSpline(p0, p1, p2, t)
           if (close) {
             str += `C ${p0.cPts[1].x} ${p0.cPts[1].y} ${p1.cPts[0].x} ${p1.cPts[0].y} ${p1.x} ${p1.y} `
           } else {
             str += `Q ${p1.cPts[0].x} ${p1.cPts[0].y} ${p1.x} ${p1.y} `
           }
           break
-
         case pts.length-1:
           p0 = pts[i-1]
           p1 = pts[i]
           p2 = pts[0]
-          cPts = getControlPointsSpline(p0, p1, p2, t)
-          p1.cPts = cPts
-
+          p1.cPts = this.getControlPointsSpline(p0, p1, p2, t)
           if (close) {
             str += `C ${p0.cPts[1].x} ${p0.cPts[1].y} ${p1.cPts[0].x} ${p1.cPts[0].y} ${p1.x} ${p1.y} `
             str += `C ${p1.cPts[1].x} ${p1.cPts[1].y} ${p2.cPts[0].x} ${p2.cPts[0].y} ${p2.x} ${p2.y} Z`
@@ -231,12 +251,11 @@ class Path {
             str += `Q ${p0.cPts[1].x} ${p0.cPts[1].y} ${p1.x} ${p1.y} `
           }
           break
-
         default:
           p0 = pts[i-1]
           p1 = pts[i]
           p2 = pts[i+1]
-          cPts = getControlPointsSpline(p0, p1, p2, t)
+          cPts = this.getControlPointsSpline(p0, p1, p2, t)
           p1.cPts = cPts
           str += `C ${p0.cPts[1].x} ${p0.cPts[1].y} ${p1.cPts[0].x} ${p1.cPts[0].y} ${p1.x} ${p1.y} `
           break
@@ -246,36 +265,10 @@ class Path {
   }
 }
 
-function getControlPointQuad(a, b, t = 0.5, d = 0.5) {
-  let m = b.sub(a)
-  let p = lerp(a, b, d)
-  let perp = nVec(-m.norm().y, m.norm().x)
-  let amp = t * ( dist(a, b) / 2 )
-
-  let cp = nVec(
-    p.x + amp * perp.x,
-    p.y + amp * perp.y
-  )
-  return cp
-}
-
-function getControlPointsSpline(p0, p1, p2, t) {
-  // adapted from this: http://scaledinnovation.com/analytics/splines/aboutSplines.html
-  // Builds Control Points for p1!!
-  let d01 = Math.sqrt(Math.pow(p1.x - p0.x, 2) + Math.pow(p1.y - p0.y, 2)); // distance between pt1 and pt2
-  let d12 = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)); // distance between pt2 and pt3
-  let fa = t * d01 / (d01+d12);   // scaling factor for triangle Ta
-  let fb = t * d12 / (d01+d12);   // ditto for Tb, simplifies to fb=t-fa
-  let cp1x = p1.x - fa * (p2.x - p0.x);    // x2-x0 is the width of triangle T
-  let cp1y = p1.y - fa * (p2.y - p0.y);    // y2-y0 is the height of T
-  let cp2x = p1.x + fb * (p2.x - p0.x);
-  let cp2y = p1.y + fb * (p2.y - p0.y);  
-  return [new Vec(cp1x, cp1y), new Vec(cp2x, cp2y)]
-}
 
 
-// VECTORS.
-// BASICALLY POINTS. WITH EXTRAS.
+/////// VECTORS.
+/////// Basically x/y-Points, with some extras.
 
 class Vec {
   constructor(x, y, z = 0) {
@@ -284,14 +277,12 @@ class Vec {
     this.z = z
     this.m = Math.sqrt(this.x**2 + this.y**2 + this.z**2) // Magnitude
   }
-
   norm() {
     let xn = this.x / this.m,
         yn = this.y / this.m,
         zn = this.z / this.m
     return new Vec(xn, yn, zn)
   }
-
   // ov = other Vec
   add(ov) {
     let xn = this.x + ov.x,
@@ -299,36 +290,30 @@ class Vec {
         zn = this.z + ov.z
     return new Vec(xn, yn, zn)
   }
-
   sub(ov) {
     let xn = this.x - ov.x, 
         yn = this.y - ov.y,
         zn = this.z - ov.z
     return new Vec(xn, yn, zn)
   }
-
   cross(ov) {
     let xn = this.y * ov.z - this.z * ov.y,
         yn = this.z * ov.x - this.x * ov.z,
         zn = this.x * ov.y - this.y * ov.x
     return new Vec(xn, yn, zn)
   }
-
   dot(ov) {
     return this.x * ov.x + this.y * ov.y + this.z * ov.z
   }
-
   ang(ov) {
     return Math.acos( this.norm().dot(ov.norm()) / (this.norm().m * ov.norm().m) )
   }
-
   lerp(ov, t) {
     let xn = (1 - t) * this.x + ov.x * t,
         yn = (1 - t) * this.y + ov.y * t,
         zn = (1 - t) * this.z + ov.z * t
     return new Vec(xn, yn, zn)
   }
-
   mid(ov) {
     let xn = (this.x + ov.x) / 2,
         yn = (this.y + ov.y) / 2,
@@ -337,7 +322,9 @@ class Vec {
   }
 }
 
-// VECTORS. Shorthands & Utility.
+/////// VECTORS. 
+/////// Shorthands & Utility.
+
 function nVec(x, y, z) { 
   return new Vec(x, y, z) 
 }
@@ -370,6 +357,7 @@ function dot(a, b) {
 function ang(a, b) {
   return Math.acos( dot(a.norm(), b.norm()) / (a.norm().m * b.norm().m) )
 }
+
 
 
 /////// RANDOM & SEED.
