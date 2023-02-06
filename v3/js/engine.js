@@ -59,7 +59,9 @@ class SVG {
 
     const link = document.createElement("a"),
           time = Math.round(new Date().getTime() / 1000)
-    link.download = `${document.title}-${time}.svg`
+    let   hashStr = ''
+    if (seed) { hashStr += '-s='+ seed.hash }
+    link.download = `${document.title}-${time}${hashStr}.svg`
     link.href = URL.createObjectURL(blob)
     link.click()
     URL.revokeObjectURL(link.href)
@@ -389,6 +391,11 @@ class Hash {
         .join("")
     return str
   }
+  update() {
+    let nStr = this.new()
+    this.hash = nStr
+    return nStr
+  }
   b58dec = (str) =>
   [...str].reduce(
     (p, c) => (p * this.alphabet.length + this.alphabet.indexOf(c)) | 0,
@@ -411,6 +418,8 @@ class Hash {
   };
 }
 
+// Make this a bit more foolproof? If seed ist not defined (not undefined), it breaks...
+// maybe some global defaults would help after all.
 function rnd() {
   if (seed) {
     return seed.rnd()
@@ -468,6 +477,30 @@ function divLength(a, b, nSeg, t = 1/nSeg, outA = []) {
 
 
 
+/////// INTERACTION & KEYS.
+
+const keyHandlers = (event) => {
+  switch (event.key) {
+    case 's':
+      svg.save()
+      break
+    case 'r': {
+      const myURL = new URL(window.location.href)
+      const newHash = seed.new()
+      myURL.searchParams.set('seed', newHash)
+      window.location.href = myURL.href
+      break
+    }
+    case 'ArrowLeft':
+      history.back()
+      break
+    case 'ArrowRight':
+      history.forward()
+      break
+    }
+}
+
+document.addEventListener('keydown', keyHandlers)
 
 
 

@@ -3,6 +3,7 @@
 // SETUP
 
 const seed = new Hash()
+// const seed = false
 
 const setup = {
       id: 'mySVG',
