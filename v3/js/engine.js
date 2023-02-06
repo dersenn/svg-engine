@@ -2,10 +2,9 @@
 // Reset The Preset.
 
 // To Do:
-// — implement fxhash or similar prng (use own rand() in all methods etc.!!!)
 // — nice to have: working defaults.
 // — nice to have: add shortcuts to setAttribute... e.g. strokeCap(5)
-// — nice to have: color object or methods.
+// — nice to have: color object or methods. and gradients.
 // — nice to have: modularize???
 // — maybe get rid of z-coordinates... it's 2d after all. but maybe useful for noise etc. (?)
 // — <g> (group). but needs a bit of thinking re: parent.
@@ -476,8 +475,7 @@ function divLength(a, b, nSeg, t = 1/nSeg, outA = []) {
 
 
 
-
-/////// INTERACTION & KEYS.
+/////// INTERACTION, KEYS & FILEHANDLING
 
 const keyHandlers = (event) => {
   switch (event.key) {
@@ -499,8 +497,19 @@ const keyHandlers = (event) => {
       break
     }
 }
-
 document.addEventListener('keydown', keyHandlers)
+
+
+// Set Current Folder as Filename/Title
+function getDirName() {
+  const location = window.location.pathname
+  const path = location.substring(0, location.lastIndexOf("/"))
+  const dirName = path.substring(path.lastIndexOf("/")+1)
+  return dirName
+}
+document.title = getDirName()
+
+
 
 
 

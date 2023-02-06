@@ -1,9 +1,8 @@
 
+// INIT
 
-// SETUP
-
-const seed = new Hash()
-// const seed = false
+// const seed = new Hash()
+const seed = false
 
 const setup = {
       id: 'mySVG',
@@ -15,7 +14,7 @@ let svg = new SVG(setup)
 
 
 
-// DRAW
+// SETUP
 
 let pts = [
   nVec(svg.w*(rndInt(1, 9)/10), svg.h*.1),
@@ -27,6 +26,10 @@ let pts = [
 
 let path = new Path(pts, true)
 
+
+
+// DRAW/ANIMATE
+
 let polygon = svg.makePath(path.buildPolygon(), 'transparent', '#0f0', 1)
 let spline = svg.makePath(path.buildSpline(.6, true), 'transparent', '#f00', 2)
 let quad = svg.makePath(path.buildQuadBez(-.5, .5, false), 'transparent', '#00f', 4)
@@ -36,7 +39,9 @@ for (let i = 0; i < pts.length; i++) {
   const pt = svg.makeCircle(pts[i], 5, '#000')
 }
 
-svg.makeCircle(svg.c, 5, '#0f0')
+svg.makeCircle(svg.c, 5, '#f00', 'transparent')
+
+
 
 
 
