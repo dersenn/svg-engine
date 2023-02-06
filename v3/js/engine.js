@@ -1,8 +1,7 @@
-// 30-01-2023
+// 06-02-2023
 // Reset The Preset.
 
 // To Do:
-// — get spline to work
 // — implement fxhash or similar prng (use own rand() in all methods etc.!!!)
 // — nice to have: working defaults.
 // — nice to have: add shortcuts to setAttribute... e.g. strokeCap(5)
@@ -12,7 +11,7 @@
 // — <g> (group). but needs a bit of thinking re: parent.
 
 
-// — fuckin do something with it :-)
+// — do something with it :-)
 
 
 class SVG {
@@ -198,7 +197,6 @@ class Path {
   buildSpline(t = .4, close = this.close) {
 
     // doesn't work if pts.length < 3
-
     let pts = this.pts
     let str = 'M '
     for (let i = 0; i < pts.length; i++) {
@@ -254,7 +252,6 @@ class Path {
     }
     return str
   }
-
 }
 
 function getControlPointQuad(a, b, t = 0.5, d = 0.5) {
@@ -271,7 +268,6 @@ function getControlPointQuad(a, b, t = 0.5, d = 0.5) {
   return cp
 }
 
-
 function getControlPointsSpline(p0, p1, p2, t) {
   // adapted from this: http://scaledinnovation.com/analytics/splines/aboutSplines.html
   // Builds Control Points for p1!!
@@ -284,26 +280,6 @@ function getControlPointsSpline(p0, p1, p2, t) {
   let cp2x = p1.x + fb * (p2.x - p0.x);
   let cp2y = p1.y + fb * (p2.y - p0.y);  
   return [new Vec(cp1x, cp1y), new Vec(cp2x, cp2y)]
-}
-
-
-// TILE 
-// (NOT SURE IF NECESSARY)
-
-class Tile {
-  constructor(p1, p2) {
-    this.p1 = p1
-    this.p2 = p2
-    this.xMin = Math.min(p1.x, p2.x)
-    this.xMax = Math.max(p1.x, p2.x)
-    this.yMin = Math.min(p1.y, p2.y)
-    this.yMax = Math.max(p1.y, p2.y)
-    this.pMin = new Vec(this.xMin, this.yMin)
-    this.pMax = new Vec(this.xMax, this.yMax)
-    this.w = Math.abs(this.p2.x - this.p1.x)
-    this.h = Math.abs(this.p2.y - this.p1.y)
-    this.c = new Vec(this.p1.x + ((this.p2.x - this.p1.x) /2), this.p1.y + ((this.p2.y - this.p1.y) /2))
-  }
 }
 
 
@@ -410,17 +386,20 @@ function ang(a, b) {
 
 /////// UTILITY FUNCTIONS.
 
-// Add random w/ seed.
-function rand() {
-  return Math.random()
+function rnd() {
+  if (useSeed) {
+    return fxrnd()
+  } else {
+    return Math.random()
+  }
 }
 
-function randInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min
+function rndInt(min, max) {
+  return Math.floor(rnd() * (max - min + 1)) + min
 }
 
 function coinToss(chance) {
-  if (Math.random() <= chance / 100) {
+  if (rnd() <= chance / 100) {
     return true
   } else {
     return false
@@ -446,7 +425,7 @@ function deg(rad) {
 function divLength(a, b, nSeg, t = 1/nSeg, outA = []) {
   if (t === 'RAND') {
     for (let i = 0; i < nSeg-1; i++) {
-      t = Math.random()
+      t = rnd()
       a = a.lerp(b, t)
       outA.push(a)
     }
@@ -462,38 +441,60 @@ function divLength(a, b, nSeg, t = 1/nSeg, outA = []) {
 
 
 
-// EX FXHASH
+// EX FXHASH & Bigger Picture
 
 
-//---- do not edit the following code (you can indent as you wish)
-let alphabet = "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"
-var fxhash = "oo" + Array(49).fill(0).map(_=>alphabet[(Math.random()*alphabet.length)|0]).join('')
-let b58dec = str=>[...str].reduce((p,c)=>p*alphabet.length+alphabet.indexOf(c)|0, 0)
-let fxhashTrunc = fxhash.slice(2)
-let regex = new RegExp(".{" + ((fxhashTrunc.length/4)|0) + "}", 'g')
-let hashes = fxhashTrunc.match(regex).map(h => b58dec(h))
-let sfc32 = (a, b, c, d) => {
-  return () => {
-    a |= 0; b |= 0; c |= 0; d |= 0
-    var t = (a + b | 0) + d | 0
-    d = d + 1 | 0
-    a = b ^ b >>> 9
-    b = c + (c << 3) | 0
-    c = c << 21 | c >>> 11
-    c = c + t | 0
-    return (t >>> 0) / 4294967296
+let hash;
+let fxrnd;
+function Hash() {
+  //--- Random mit fxhash ----
+  let alphabet = "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";
+  hash =
+    "oo" +
+    Array(49)
+      .fill(0)
+      .map((_) => alphabet[(Math.random() * alphabet.length) | 0])
+      .join("");
+
+  //--- --> seed aus URL ----
+  const params = new URLSearchParams(location.search);
+  if (params.has("seed")) {
+    const seed = params.get("seed");
+    hash = seed;
   }
-}
-var fxrand = sfc32(...hashes)
-// true if preview mode active, false otherwise
-// you can append preview=1 to the URL to simulate preview active
-var isFxpreview = new URLSearchParams(window.location.search).get('preview') === "1"
-// call this method to trigger the preview
-function fxpreview() {
-  console.log("fxhash: TRIGGER PREVIEW")
-}
-//---- /do not edit the following code
 
+  //--- Random mit fxhash ----
+  let b58dec = (str) =>
+    [...str].reduce(
+      (p, c) => (p * alphabet.length + alphabet.indexOf(c)) | 0,
+      0
+    );
+  let hashTrunc = hash.slice(2);
+  let regex = new RegExp(".{" + ((hashTrunc.length / 4) | 0) + "}", "g");
+  let hashes = hashTrunc.match(regex).map((h) => b58dec(h));
+  let sfc32 = (a, b, c, d) => {
+    return () => {
+      a |= 0;
+      b |= 0;
+      c |= 0;
+      d |= 0;
+      var t = (((a + b) | 0) + d) | 0;
+      d = (d + 1) | 0;
+      a = b ^ (b >>> 9);
+      b = (c + (c << 3)) | 0;
+      c = (c << 21) | (c >>> 11);
+      c = (c + t) | 0;
+      return (t >>> 0) / 4294967296;
+    };
+  };
+  fxrnd = sfc32(...hashes);
+
+  return hash;
+}
+Hash();
+
+//--- --> seed in console zum kopieren ----
+console.log("Unique seed! Copy after URL: ?seed=" + hash);
 
 
 
