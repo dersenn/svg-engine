@@ -116,6 +116,19 @@ class SVG {
     return rect
   }
 
+  makeRectAB(a, b, fill = 'transparent', stroke = this.def.stroke, strokeW = this.def.strokeW) {
+    let rect = document.createElementNS(this.ns, 'rect')
+    rect.setAttribute('x', a.x)
+    rect.setAttribute('y', a.y)
+    rect.setAttribute('width', b.x - a.x)
+    rect.setAttribute('height', b.y - a.y)
+    rect.setAttribute('fill', fill)
+    rect.setAttribute('stroke', stroke)
+    rect.setAttribute('stroke-width', strokeW)
+    this.stage.append(rect)
+    return rect
+  }
+
   makePath(d, fill = this.def.fill, stroke = this.def.stroke, strokeW = this.def.strokeW) {
     let path = document.createElementNS(this.ns, 'path')
     path.setAttribute('d', d)

@@ -1,8 +1,13 @@
 
 // INIT
 
-// const seed = new Hash()
-const seed = false
+let doSeed = true
+let seed
+if (doSeed) {
+  seed = new Hash()
+} else {
+  seed = false
+}
 
 const setup = {
       id: 'mySVG',
@@ -34,6 +39,7 @@ let polygon = svg.makePath(path.buildPolygon(), 'transparent', '#0f0', 1)
 let spline = svg.makePath(path.buildSpline(.6, true), 'transparent', '#f00', 2)
 let quad = svg.makePath(path.buildQuadBez(-.5, .5, false), 'transparent', '#00f', 4)
 
+let q1 = svg.makeRectAB(nVec(0,0), svg.c)
 
 for (let i = 0; i < pts.length; i++) {
   const pt = svg.makeCircle(pts[i], 5, '#000')
