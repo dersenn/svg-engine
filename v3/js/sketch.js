@@ -1,6 +1,6 @@
 
 // Maybe we can make this a bit more elegant with a default... but. difficult.
-const useSeed = true;
+const seed = new Hash()
 
 const setup = {
       id: 'mySVG',
@@ -33,7 +33,7 @@ let quad = svg.makePath(path.buildQuadBez(), 'transparent', '#00f', 4)
 
 
 for (let i = 0; i < pts.length; i++) {
-  // const pt = svg.makeCircle(pts[i], 5, '#000')
+  const pt = svg.makeCircle(pts[i], 5, '#000')
 }
 
 
@@ -41,9 +41,7 @@ for (let i = 0; i < pts.length; i++) {
 console.log('fxrand 1: ' + rnd())
 console.log('fxrand 2: ' + rnd())
 console.log('fxrand int: ' + rndInt(2, 5))
-
 console.log('fxrand int: ' + rndInt(2, 5))
-
 
 
 // My Only Friend, The End.

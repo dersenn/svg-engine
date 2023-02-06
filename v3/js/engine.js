@@ -158,35 +158,27 @@ class Path {
     let str = 'M '
     for (let i = 0; i < this.pts.length; i++) {
       let pt = this.pts[i]
-      let cp, m, p
+      let cp
 
       switch(i) {
         case 0:
           str += `${pt.x} ${pt.y}`
-          svg.makeCircle(pt, 5, '#00f')
-
           break
 
         case this.pts.length-1:
-
           cp = getControlPointQuad(pts[i-1], pt, t)
           str += ` S ${cp.x} ${cp.y} ${pt.x} ${pt.y}`
-          svg.makeCircle(pt, 5, '#f00')
 
           if (close) {
             let tt = t * -1
             let ccp = getControlPointQuad(pt, pts[0], tt)
             str += ` S ${cp.x} ${cp.y} ${pts[0].x} ${pts[0].y}`
           }
-
           break
 
         default:
-
           cp = getControlPointQuad(pts[i-1], pt, t)
           str += ` S ${cp.x} ${cp.y} ${pt.x} ${pt.y}`
-          svg.makeCircle(pt, 5, '#000')
-
           break
       }
     }
@@ -264,7 +256,6 @@ function getControlPointQuad(a, b, t = 0.5, d = 0.5) {
     p.x + amp * perp.x,
     p.y + amp * perp.y
   )
-  // svg.makeCircle(cp, 10, 'transparent', '#0f0', 2)
   return cp
 }
 
@@ -346,7 +337,7 @@ class Vec {
   }
 }
 
-
+// VECTORS. Shorthands & Utility.
 function nVec(x, y, z) { 
   return new Vec(x, y, z) 
 }
@@ -366,11 +357,10 @@ function lerp(a, b, t) {
 }
 
 function mid(a, b) {
-  return lerp(a, b, .5)
-  // let xn = (a.x + b.x) / 2,
-  //     yn = (a.y + b.y) / 2,
-  //     zn = (a.z + b.z) / 2
-  // return new Vec(xn, yn, zn)
+  let xn = (a.x + b.x) / 2,
+      yn = (a.y + b.y) / 2,
+      zn = (a.z + b.z) / 2
+  return new Vec(xn, yn, zn)
 }
 
 function dot(a, b) {
@@ -382,13 +372,60 @@ function ang(a, b) {
 }
 
 
+/////// RANDOM & SEED.
 
-
-/////// UTILITY FUNCTIONS.
+class Hash {
+  constructor() {
+    this.alphabet = '123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ'
+    this.init()
+    this.hashTrunc = this.hash.slice(2);
+    this.regex = new RegExp('.{' + ((this.hashTrunc.length / 4) | 0) + '}', 'g');
+    this.hashes = this.hashTrunc.match(this.regex).map((h) => this.b58dec(h));
+    this.rnd = this.sfc32(...this.hashes)
+  }
+  init() {
+    const params = new URLSearchParams(location.search);
+    if (params.has('seed')) {
+      this.hash = params.get('seed');
+    } else {
+      this.hash = this.new()
+    }
+    console.log("Seed: ?seed=" + this.hash);
+  }
+  new() {
+    let str =
+      'oo' +
+      Array(49)
+        .fill(0)
+        .map((_) => this.alphabet[(Math.random() * this.alphabet.length) | 0])
+        .join("")
+    return str
+  }
+  b58dec = (str) =>
+  [...str].reduce(
+    (p, c) => (p * this.alphabet.length + this.alphabet.indexOf(c)) | 0,
+    0
+  )
+  sfc32 = (a, b, c, d) => {
+    return () => {
+      a |= 0;
+      b |= 0;
+      c |= 0;
+      d |= 0;
+      var t = (((a + b) | 0) + d) | 0;
+      d = (d + 1) | 0;
+      a = b ^ (b >>> 9);
+      b = (c + (c << 3)) | 0;
+      c = (c << 21) | (c >>> 11);
+      c = (c + t) | 0;
+      return (t >>> 0) / 4294967296;
+    };
+  };
+}
 
 function rnd() {
-  if (useSeed) {
-    return fxrnd()
+  if (seed) {
+    return seed.rnd()
   } else {
     return Math.random()
   }
@@ -406,6 +443,10 @@ function coinToss(chance) {
   }
 }
 
+
+
+/////// UTILITY FUNCTIONS.
+
 function map(val, minIn, maxIn, minOut, maxOut) {
   val = (val - minIn) / (maxIn - minIn)
   return minOut + val * (maxOut - minOut)
@@ -420,10 +461,9 @@ function deg(rad) {
 }
 
 // Divide length between to points. Returns intermediary Points.
-// Looks very end-heavy to me. not really random.
-// Maybe add a minimum Distance.
+// Random looks very end-heavy to me. not really random.
 function divLength(a, b, nSeg, t = 1/nSeg, outA = []) {
-  if (t === 'RAND') {
+  if (t === 'RND') {
     for (let i = 0; i < nSeg-1; i++) {
       t = rnd()
       a = a.lerp(b, t)
@@ -436,68 +476,6 @@ function divLength(a, b, nSeg, t = 1/nSeg, outA = []) {
   }
   return outA
 }
-
-
-
-
-
-// EX FXHASH & Bigger Picture
-
-
-let hash;
-let fxrnd;
-function Hash() {
-  //--- Random mit fxhash ----
-  let alphabet = "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";
-  hash =
-    "oo" +
-    Array(49)
-      .fill(0)
-      .map((_) => alphabet[(Math.random() * alphabet.length) | 0])
-      .join("");
-
-  //--- --> seed aus URL ----
-  const params = new URLSearchParams(location.search);
-  if (params.has("seed")) {
-    const seed = params.get("seed");
-    hash = seed;
-  }
-
-  //--- Random mit fxhash ----
-  let b58dec = (str) =>
-    [...str].reduce(
-      (p, c) => (p * alphabet.length + alphabet.indexOf(c)) | 0,
-      0
-    );
-  let hashTrunc = hash.slice(2);
-  let regex = new RegExp(".{" + ((hashTrunc.length / 4) | 0) + "}", "g");
-  let hashes = hashTrunc.match(regex).map((h) => b58dec(h));
-  let sfc32 = (a, b, c, d) => {
-    return () => {
-      a |= 0;
-      b |= 0;
-      c |= 0;
-      d |= 0;
-      var t = (((a + b) | 0) + d) | 0;
-      d = (d + 1) | 0;
-      a = b ^ (b >>> 9);
-      b = (c + (c << 3)) | 0;
-      c = (c << 21) | (c >>> 11);
-      c = (c + t) | 0;
-      return (t >>> 0) / 4294967296;
-    };
-  };
-  fxrnd = sfc32(...hashes);
-
-  return hash;
-}
-Hash();
-
-//--- --> seed in console zum kopieren ----
-console.log("Unique seed! Copy after URL: ?seed=" + hash);
-
-
-
 
 
 
