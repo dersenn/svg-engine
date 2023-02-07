@@ -486,6 +486,16 @@ function divLength(a, b, nSeg, t = 1/nSeg, outA = []) {
   return outA
 }
 
+function shuffle(iA) {
+  oA = [...iA]
+  for (let i = oA.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [oA[i], oA[j]] = [oA[j], oA[i]];
+  }
+  return oA;
+}
+
+
 
 
 /////// INTERACTION, KEYS & FILEHANDLING

@@ -49,6 +49,17 @@ svg.makeCircle(svg.c, 5, '#f00', 'transparent')
 
 
 
+const arr = [
+  0,
+  1,
+  2,
+  3
+]
+
+let s = shuffle(arr)
+
+console.log(s)
+console.log(arr)
 
 
 
