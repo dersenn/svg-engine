@@ -1,9 +1,9 @@
 
 // INIT
 
-let doSeed = true
+let useSeed = true
 let seed
-if (doSeed) {
+if (useSeed) {
   seed = new Hash()
 } else {
   seed = false
