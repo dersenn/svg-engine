@@ -50,15 +50,20 @@ svg.makeCircle(svg.c, 5, '#f00', 'transparent')
 
 
 const arr = [
-  0,
+  [0,1],
   1,
   2,
   3
 ]
 
-let s = shuffle(arr)
+let copy = Array.from(arr)
 
-console.log(s)
+copy[0][0] = 20
+
+
+// let s = shuffle(arr)
+// console.log(s)
+
 console.log(arr)
 
 

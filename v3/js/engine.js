@@ -487,7 +487,7 @@ function divLength(a, b, nSeg, t = 1/nSeg, outA = []) {
 }
 
 function shuffle(iA) {
-  oA = [...iA]
+  oA = Array.from(iA) // Copy Array. Only one dimensional arrays!
   for (let i = oA.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [oA[i], oA[j]] = [oA[j], oA[i]];
@@ -502,10 +502,10 @@ function shuffle(iA) {
 
 const keyHandlers = (event) => {
   switch (event.key) {
-    case 's':
+    case 'd':
       svg.save()
       break
-    case 'r': {
+    case 'n': {
       const myURL = new URL(window.location.href)
       const newHash = seed.new()
       myURL.searchParams.set('seed', newHash)
