@@ -142,6 +142,24 @@ class SVG {
 
 
 
+/////// PATHPOINT.
+/////// Helper class to construct paths programmatically etc.
+/////// Might be included in path directly.
+/////// Might also just be a Vector().
+
+class pPt {
+  constructor(pt, type = 'LINE', t = 0.5, d = 0.5) {
+    this.b = pt
+    this.type = type
+    this.t = t // not sure if this makes sense here.
+    this.d = d // not sure if this makes sense here.
+    this.cp
+  }
+}
+
+
+
+
 /////// PATH.
 /////// Helper class to make those d-strings etc.
 
@@ -150,6 +168,26 @@ class Path {
     this.pts = pts
     this.close = close
   }
+
+  // addPt(pt, type, t, d) {
+  //   this.pts.push(new pPt(pt, type, t, d))
+  // }
+
+  // Path from pathPoints with individual properties.
+
+  buildPath(close = this.close) {
+    let str = 'M '
+    for (let i = 0; i < this.pts.length; i++) {
+      let pt = this.pts[i]
+      switch(i) {
+        case(0):
+          str += `${pt.x} ${pt.y}`
+          break
+      }
+    }
+  }
+
+  // Polygon
 
   buildPolygon(close = this.close) {
     let str = 'M '
@@ -444,7 +482,7 @@ function rndInt(min, max) {
   return Math.floor(rnd() * (max - min + 1)) + min
 }
 
-function coinToss(chance) {
+function coinToss(chance = 50) {
   if (rnd() <= chance / 100) {
     return true
   } else {

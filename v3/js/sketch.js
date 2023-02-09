@@ -48,23 +48,7 @@ for (let i = 0; i < pts.length; i++) {
 svg.makeCircle(svg.c, 5, '#f00', 'transparent')
 
 
-
-const arr = [
-  [0,1],
-  1,
-  2,
-  3
-]
-
-let copy = Array.from(arr)
-
-copy[0][0] = 20
-
-
-// let s = shuffle(arr)
-// console.log(s)
-
-console.log(arr)
+console.log(spline)
 
 
 
