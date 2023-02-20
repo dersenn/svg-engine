@@ -12,7 +12,7 @@ if (useSeed) {
 const setup = {
       id: 'mySVG',
       parent: document.body,
-      presAspect: 'none', // needs more work
+      presAspect: 'none', // other values?
 }
 
 let svg = new SVG(setup)
@@ -35,17 +35,19 @@ let path = new Path(pts, true)
 
 // DRAW/ANIMATE
 
-let polygon = svg.makePath(path.buildPolygon(), 'transparent', '#0f0', 1)
-let spline = svg.makePath(path.buildSpline(.6, true), 'transparent', '#f00', 2)
-let quad = svg.makePath(path.buildQuadBez(-.5, .5, false), 'transparent', '#00f', 4)
+svg.makeCircle(svg.c, 5, '#f00', 'transparent')
 
-let q1 = svg.makeRectAB(nVec(0,0), svg.c)
+
+
+let polygon = svg.makePath(path.buildPolygon(false), 'transparent', '#0f0', 1)
+let spline = svg.makePath(path.buildSpline(.5, false), 'transparent', '#f00', 2)
+let quad = svg.makePath(path.buildQuadBez(-.5, .5, false), 'transparent', '#00f', 2)
+
 
 for (let i = 0; i < pts.length; i++) {
   const pt = svg.makeCircle(pts[i], 5, '#000')
 }
 
-svg.makeCircle(svg.c, 5, '#f00', 'transparent')
 
 
 console.log(spline)
