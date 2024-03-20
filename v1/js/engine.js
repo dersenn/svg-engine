@@ -1,4 +1,5 @@
 //the main class
+//new comment test for git
 
 class SVG {
   //by default appends to body.
